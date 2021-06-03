@@ -23,6 +23,10 @@ Printer                  printer;
 AudioConnection    patchCord(counter, 0, fft, 0);
 AudioConnection    patchCord1(fft, 0, printer, 0);
 
+
+void printPerformanceData();
+
+
 void setup() {
     delay(1000);
     
@@ -33,8 +37,31 @@ void setup() {
     audioShield.micGain(35);  //0-63
     audioShield.volume(0.8);  //0-1
 
-    Serial.println("Done initilizing! Starting now!");
+    Serial.println("Done initializing! Starting now!");
 }
 
+
 void loop() {
+    printPerformanceData();
+    delay(500);
+}
+
+
+void printPerformanceData() {
+    Serial.print("CPU: ");
+    Serial.print("fft=");
+    Serial.print(fft.processorUsage());
+    Serial.print(",");
+    Serial.print(fft.processorUsageMax());
+    Serial.print("  ");
+    Serial.print("all=");
+    Serial.print(AudioProcessorUsage());
+    Serial.print(",");
+    Serial.print(AudioProcessorUsageMax());
+    Serial.print("    ");
+    Serial.print("Audio Memory: ");
+    Serial.print(AudioMemoryUsage()); // number of audio blocks currently in use
+    Serial.print(",");
+    Serial.print(AudioMemoryUsageMax()); // maximum number of audio blocks ever in use
+    Serial.println();
 }
