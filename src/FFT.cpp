@@ -52,13 +52,13 @@ void FFT::update(void)
     // apply window function
     arm_mult_f32(m_floatInBuffer, const_cast<float*>(HannWindow512), m_floatInBuffer, FFT_LENGTH);
 
-    Serial.println("Converted to float: ");
-    for (int i = 0; i < FFT_LENGTH; i++)
-    {
-        Serial.print(m_floatInBuffer[i]);
-        Serial.print(", ");
-    }
-    Serial.println();
+    // Serial.println("Converted to float: ");
+    // for (int i = 0; i < FFT_LENGTH; i++)
+    // {
+    //     Serial.print(m_floatInBuffer[i]);
+    //     Serial.print(", ");
+    // }
+    // Serial.println();
 
     // do the fft
     // the FFT output is complex and in the following format
@@ -67,7 +67,7 @@ void FFT::update(void)
     arm_rfft_f32(&m_fftInst, m_floatInBuffer, m_floatComplexBuffer);
 
     // compute magnitudes
-    Serial.println("Magnitues: ");
+    //Serial.println("Magnitues: ");
     for (int i=0; i < 2*FFT_LENGTH; i+=2) {
         float32_t real = m_floatComplexBuffer[i];
         float32_t imag = m_floatComplexBuffer[i + 1];
@@ -75,22 +75,22 @@ void FFT::update(void)
 
         arm_sqrt_f32(real * real + imag * imag, &result);
 
-        Serial.print(result);
-        Serial.print(", ");
+        //Serial.print(result);
+        //Serial.print(", ");
     }
-    Serial.println();
+    //Serial.println();
 
     // do the ifft
     arm_rfft_f32(&m_ifftInst, m_floatComplexBuffer, m_floatOutBuffer);
 
-    Serial.println("IFFT result: ");
-    for (int i = 0; i < FFT_LENGTH; i++)
-    {
-        Serial.print(m_floatOutBuffer[i]);
-        Serial.print(", ");
-    }
-    Serial.println();
-    Serial.println();
+    // Serial.println("IFFT result: ");
+    // for (int i = 0; i < FFT_LENGTH; i++)
+    // {
+    //     Serial.print(m_floatOutBuffer[i]);
+    //     Serial.print(", ");
+    // }
+    // Serial.println();
+    // Serial.println();
 
     // convert floats back to int
     arm_float_to_q15(m_floatOutBuffer, m_outputBuffer, FFT_LENGTH);
