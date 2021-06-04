@@ -14,7 +14,7 @@ AudioInputI2S            audioInput;
 FFT                      fft;
 Counter                  counter;
 Printer                  printer;
-//AudioOutputI2S           audioOutput;
+AudioOutputI2S           audioOutput;
 AudioSynthWaveformSine   sine;
 
 //AudioConnection    patchCord(audioInput, 0, fft, 0);
@@ -25,6 +25,8 @@ AudioSynthWaveformSine   sine;
 //AudioConnection    patchCord1(fft, 0, printer, 0);
 
 AudioConnection      sineToFFT(sine, 0, fft, 0);
+AudioConnection      fftToOut(fft, 0, audioOutput, 0);
+//AudioConnection      fftToPrinter(fft, 0, printer, 0);
 
 
 void printPerformanceData();
@@ -38,9 +40,9 @@ void setup() {
     audioShield.enable();
     audioShield.inputSelect(micInput);
     audioShield.micGain(35);  //0-63
-    audioShield.volume(0.8);  //0-1
+    audioShield.volume(0.6);  //0-1
 
-    sine.frequency(10000);
+    sine.frequency(200);
 
     Serial.println("Done initializing! Starting now!");
 }
