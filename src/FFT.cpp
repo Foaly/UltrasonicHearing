@@ -20,134 +20,79 @@ void FFT::update(void)
     }
 
 #if defined(__ARM_ARCH_7EM__)
-    switch (state) {
-    case 0:
-        // TODO: collapse the cases into one and use an incrementing offset
+    // get the input block data
+    for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
+        m_inputBuffer[i + m_offset] = input_block->data[i];
+    }
 
-        // get the input block data
-        for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-            m_inputBuffer[i] = input_block->data[i];
-        }
+    // fill the output block
+    for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
+        output_block->data[i] = m_outputBuffer[i + m_offset];
+    }
 
-        // fill the output block
-        for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-            output_block->data[i] = m_outputBuffer[i];
-        }
+    // send out the audio block
+    transmit(output_block, 0);
+    release(input_block);
+    release(output_block);
 
-        transmit(output_block, 0);
-        release(input_block);
-        release(output_block);
+    // check if we collected enough buffers for another fft
+    m_offset += AUDIO_BLOCK_SAMPLES;
+    if (m_offset < FFT_LENGTH) {
+        return;
+    }
+    m_offset = 0;
 
-        state = 1;
-        break;
+    // convert buffer to float
+    arm_q15_to_float(m_inputBuffer, m_floatInBuffer, FFT_LENGTH);
 
-    case 1:
-        // get the input block data
-        for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-            m_inputBuffer[128 + i] = input_block->data[i];
-        }
+    // apply window function
+    arm_mult_f32(m_floatInBuffer, const_cast<float*>(HannWindow512), m_floatInBuffer, FFT_LENGTH);
 
-        // fill the output block
-        for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-            output_block->data[i] = m_outputBuffer[i + 128];
-        }
+    Serial.println("Converted to float: ");
+    for (int i = 0; i < FFT_LENGTH; i++)
+    {
+        Serial.print(m_floatInBuffer[i]);
+        Serial.print(", ");
+    }
+    Serial.println();
 
-        transmit(output_block, 0);
-        release(input_block);
-        release(output_block);
+    // do the fft
+    // the FFT output is complex and in the following format
+    // {real(0), imag(0), real(1), imag(1), ...}
+    // real[0] represents the DC offset, and imag[0] should be 0
+    arm_rfft_f32(&m_fftInst, m_floatInBuffer, m_floatComplexBuffer);
 
-        state = 2;
-        break;
+    // compute magnitudes
+    Serial.println("Magnitues: ");
+    for (int i=0; i < 2*FFT_LENGTH; i+=2) {
+        float32_t real = m_floatComplexBuffer[i];
+        float32_t imag = m_floatComplexBuffer[i + 1];
+        float32_t result;
 
-    case 2:
-        // get the input block data
-        for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-            m_inputBuffer[256 + i] = input_block->data[i];
-        }
+        arm_sqrt_f32(real * real + imag * imag, &result);
 
-        // fill the output block
-        for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-            output_block->data[i] = m_outputBuffer[i + 256];
-        }
+        Serial.print(result);
+        Serial.print(", ");
+    }
+    Serial.println();
 
-        transmit(output_block, 0);
-        release(input_block);
-        release(output_block);
-        
-        state = 3;
-        break;
+    // do the ifft
+    arm_rfft_f32(&m_ifftInst, m_floatComplexBuffer, m_floatOutBuffer);
 
-    case 3:
-        // get the input block data
-        for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-            m_inputBuffer[384 + i] = input_block->data[i];
-        }
-
-        // fill the output block
-        for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-            output_block->data[i] = m_outputBuffer[i + 384];
-        }
-
-        transmit(output_block, 0);
-        release(input_block);
-        release(output_block);
-        
-        state = 0;
-
-        // convert buffer to float
-        arm_q15_to_float(m_inputBuffer, m_floatInBuffer, FFT_LENGTH);
-
-        // apply window function
-        arm_mult_f32(m_floatInBuffer, const_cast<float*>(HannWindow512), m_floatInBuffer, FFT_LENGTH);
-
-        Serial.println("Converted to float: ");
-        for (int i = 0; i < FFT_LENGTH; i++)
-        {
-            Serial.print(m_floatInBuffer[i]);
-            Serial.print(", ");
-        }
-        Serial.println();
-
-        // do the fft
-        // the FFT output is complex and in the following format
-        // {real(0), imag(0), real(1), imag(1), ...}
-        // real[0] represents the DC offset, and imag[0] should be 0
-        arm_rfft_f32(&m_fftInst, m_floatInBuffer, m_floatComplexBuffer);
-
-        // compute magnitudes
-        Serial.println("Magnitues: ");
-        for (int i=0; i < 2*FFT_LENGTH; i+=2) {
-            float32_t real = m_floatComplexBuffer[i];
-            float32_t imag = m_floatComplexBuffer[i + 1];
-            float32_t result;
-
-            arm_sqrt_f32(real * real + imag * imag, &result);
-
-            Serial.print(result);
-            Serial.print(", ");
-        }
-        Serial.println();
-
-        // do the ifft
-        arm_rfft_f32(&m_ifftInst, m_floatComplexBuffer, m_floatOutBuffer);
-
-        Serial.println("IFFT result: ");
-        for (int i = 0; i < FFT_LENGTH; i++)
-        {
-            Serial.print(m_floatOutBuffer[i]);
-            Serial.print(", ");
-        }
+    Serial.println("IFFT result: ");
+    for (int i = 0; i < FFT_LENGTH; i++)
+    {
+        Serial.print(m_floatOutBuffer[i]);
+        Serial.print(", ");
+    }
 
 
-        Serial.println();
-        Serial.println();
+    Serial.println();
+    Serial.println();
 
-        // for now copy input to output
-        for (int i = 0; i < 4 * AUDIO_BLOCK_SAMPLES; i++) {
-            m_outputBuffer[i] = m_inputBuffer[i];
-        }
-
-        break;
+    // for now copy input to output
+    for (int i = 0; i < 4 * AUDIO_BLOCK_SAMPLES; i++) {
+        m_outputBuffer[i] = m_inputBuffer[i];
     }
 
 #else

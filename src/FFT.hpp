@@ -9,7 +9,8 @@
 class FFT : public AudioStream
 {
 public:
-    FFT() : AudioStream(1, inputQueueArray)
+    FFT() : AudioStream(1, inputQueueArray),
+            m_offset{0}
     {
         // initialize FFTs
         arm_status status = arm_rfft_init_f32(&m_fftInst, &m_fftComplexInst, FFT_LENGTH, 0, 1);
@@ -34,10 +35,10 @@ public:
     virtual void update(void);
 
 private:
-    uint8_t state;
     audio_block_t *inputQueueArray[1];
     static const uint16_t FFT_LENGTH = 512; // has to be power of 2
 
+    uint16_t m_offset;
     int16_t m_inputBuffer[FFT_LENGTH] __attribute__ ((aligned(4)));
     int16_t m_outputBuffer[FFT_LENGTH] __attribute__ ((aligned(4)));
     float32_t m_floatInBuffer[FFT_LENGTH] __attribute__ ((aligned(4)));
