@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include "FFT.hpp"
 
+#include "window.hpp"
+
 
 void FFT::update(void)
 {
@@ -90,7 +92,40 @@ void FFT::update(void)
         
         state = 0;
 
-        // TODO: do the actual FFT processing
+        // convert buffer to float
+        arm_q15_to_float(m_inputBuffer, m_floatInBuffer, FFT_LENGTH);
+
+        // apply window function
+        arm_mult_f32(m_floatInBuffer, const_cast<float*>(HannWindow512), m_floatInBuffer, FFT_LENGTH);
+
+        Serial.println("Converted to float: ");
+        for (int i = 0; i < FFT_LENGTH; i++)
+        {
+            Serial.print(m_floatInBuffer[i]);
+            Serial.print(" ");
+        }
+        Serial.println();
+
+        // do the fft
+        // the FFT output is complex and in the following format
+        // {real(0), imag(0), real(1), imag(1), ...}
+        // real[0] represents the DC offset, and imag[0] should be 0
+        arm_rfft_f32(&m_fftInst, m_floatInBuffer, m_floatOutBuffer);
+
+        Serial.println("Magnitues: ");
+        for (int i=0; i < 2*FFT_LENGTH; i+=2) {
+            float32_t real = m_floatOutBuffer[i];
+            float32_t imag = m_floatOutBuffer[i + 1];
+            float32_t result;
+
+            arm_sqrt_f32(real * real + imag * imag, &result);
+
+            Serial.print(result);
+            Serial.print(", ");
+        }
+
+        Serial.println();
+        Serial.println();
 
         // for now copy input to output
         for (int i = 0; i < 4 * AUDIO_BLOCK_SAMPLES; i++) {
