@@ -22,6 +22,8 @@ void FFT::update(void)
 #if defined(__ARM_ARCH_7EM__)
     switch (state) {
     case 0:
+        // TODO: collapse the cases into one and use an incrementing offset
+
         // get the input block data
         for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
             m_inputBuffer[i] = input_block->data[i];
@@ -29,7 +31,7 @@ void FFT::update(void)
 
         // fill the output block
         for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-            output_block->data[i] = m_outputBuffer[i];   // m_buffer contains results of last FFT/multiply/iFFT processing (convolution filtering)
+            output_block->data[i] = m_outputBuffer[i];
         }
 
         transmit(output_block, 0);
@@ -47,7 +49,7 @@ void FFT::update(void)
 
         // fill the output block
         for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-            output_block->data[i] = m_outputBuffer[i + 128];   // m_buffer contains results of last FFT/multiply/iFFT processing (convolution filtering)
+            output_block->data[i] = m_outputBuffer[i + 128];
         }
 
         transmit(output_block, 0);
@@ -65,7 +67,7 @@ void FFT::update(void)
 
         // fill the output block
         for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-            output_block->data[i] = m_outputBuffer[i + 256];   // m_buffer contains results of last FFT/multiply/iFFT processing (convolution filtering)
+            output_block->data[i] = m_outputBuffer[i + 256];
         }
 
         transmit(output_block, 0);
@@ -83,7 +85,7 @@ void FFT::update(void)
 
         // fill the output block
         for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-            output_block->data[i] = m_outputBuffer[i + 384];   // m_buffer contains results of last FFT/multiply/iFFT processing (convolution filtering)
+            output_block->data[i] = m_outputBuffer[i + 384];
         }
 
         transmit(output_block, 0);
@@ -102,7 +104,7 @@ void FFT::update(void)
         for (int i = 0; i < FFT_LENGTH; i++)
         {
             Serial.print(m_floatInBuffer[i]);
-            Serial.print(" ");
+            Serial.print(", ");
         }
         Serial.println();
 
@@ -110,12 +112,13 @@ void FFT::update(void)
         // the FFT output is complex and in the following format
         // {real(0), imag(0), real(1), imag(1), ...}
         // real[0] represents the DC offset, and imag[0] should be 0
-        arm_rfft_f32(&m_fftInst, m_floatInBuffer, m_floatOutBuffer);
+        arm_rfft_f32(&m_fftInst, m_floatInBuffer, m_floatComplexBuffer);
 
+        // compute magnitudes
         Serial.println("Magnitues: ");
         for (int i=0; i < 2*FFT_LENGTH; i+=2) {
-            float32_t real = m_floatOutBuffer[i];
-            float32_t imag = m_floatOutBuffer[i + 1];
+            float32_t real = m_floatComplexBuffer[i];
+            float32_t imag = m_floatComplexBuffer[i + 1];
             float32_t result;
 
             arm_sqrt_f32(real * real + imag * imag, &result);
@@ -123,6 +126,18 @@ void FFT::update(void)
             Serial.print(result);
             Serial.print(", ");
         }
+        Serial.println();
+
+        // do the ifft
+        arm_rfft_f32(&m_ifftInst, m_floatComplexBuffer, m_floatOutBuffer);
+
+        Serial.println("IFFT result: ");
+        for (int i = 0; i < FFT_LENGTH; i++)
+        {
+            Serial.print(m_floatOutBuffer[i]);
+            Serial.print(", ");
+        }
+
 
         Serial.println();
         Serial.println();
