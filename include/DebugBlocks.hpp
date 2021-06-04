@@ -44,7 +44,12 @@ public:
         input_block = receiveReadOnly();
         if (!input_block) return;
 
-        Serial.println(input_block->data[0]);
+        // fill buffer
+        for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
+            Serial.print(input_block->data[i]);
+            Serial.print(", ");
+        }
+        Serial.println();
         release(input_block);
     }
 private:
