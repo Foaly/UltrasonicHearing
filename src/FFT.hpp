@@ -36,7 +36,7 @@ public:
 
 private:
     audio_block_t *inputQueueArray[1];
-    static const uint16_t FFT_LENGTH = 512; // has to be power of 2
+    static const uint16_t FFT_LENGTH = 2048; // has to be one of 128, 512, 2048
     static const uint16_t HALF_FFT_LENGTH = FFT_LENGTH / 2;
 
     uint16_t m_offset;

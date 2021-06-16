@@ -50,7 +50,7 @@ void FFT::update(void)
     std::memcpy(m_inputBuffer, m_inputBuffer + HALF_FFT_LENGTH, sizeof(int16_t) * HALF_FFT_LENGTH);
 
     // apply window function
-    arm_mult_f32(m_floatInBuffer, const_cast<float*>(HannWindow512), m_floatInBuffer, FFT_LENGTH);
+    arm_mult_f32(m_floatInBuffer, const_cast<float*>(HannWindow2048), m_floatInBuffer, FFT_LENGTH);
 
     // Serial.println("Converted to float: ");
     // for (int i = 0; i < FFT_LENGTH; i++)
