@@ -1,7 +1,15 @@
-#include <Arduino.h>
 #include "FFT.hpp"
-
 #include "window.hpp"
+
+#include <cmath>
+
+
+namespace {
+    // Wrap an arbitrary phase in radians into the range ]-pi, pi]
+    double wrap_phase(float32_t phase){
+        return std::fmod(phase + M_PI, -2.0 * M_PI) + M_PI;
+    }
+}
 
 
 void FFT::update(void)
@@ -67,22 +75,87 @@ void FFT::update(void)
     // real[0] represents the DC offset, and imag[0] should be 0
     arm_rfft_f32(&m_fftInst, m_floatInBuffer, m_floatComplexBuffer);
 
-    // compute magnitudes
+
+    // analyse the lower half of the signal (upper half is the same but mirrored)
     //Serial.println("Magnitues: ");
-    for (int i=0; i < 2*FFT_LENGTH; i+=2) {
-        float32_t real = m_floatComplexBuffer[i];
-        float32_t imag = m_floatComplexBuffer[i + 1];
-        float32_t result;
+    for (int i = 0; i < HALF_FRAME_SIZE; i++) {
+        // deinterlace the FFT result
+        float32_t real = m_floatComplexBuffer[i * 2];
+        float32_t imag = m_floatComplexBuffer[i * 2 + 1];
 
-        arm_sqrt_f32(real * real + imag * imag, &result);
-
-        //Serial.print(result);
+        // compute phase and magnitude
+        float32_t magnitude = 2.0f * std::sqrt(real * real + imag * imag);
+        float32_t phase = std::atan2(imag, real);
+        //Serial.print(magnitude);
         //Serial.print(", ");
+
+        // compute phase difference
+        float32_t temp = phase - m_previousPhases[i];
+        m_previousPhases[i] = phase;
+
+        // subtract the expected phase difference
+        temp -= static_cast<float32_t>(i) * m_omega;
+
+        // map phase into the range ]-pi, pi]
+        temp = wrap_phase(temp);
+
+        // get deviation from bin frequency from the +/- Pi interval
+        temp = OVERSAMPLING_FACTOR * temp / (2. * M_PI);
+
+        // compute the k-th partials' true frequency
+        temp = static_cast<float32_t>(i) * m_binFrequencyWidth + temp * m_binFrequencyWidth;
+
+        // save magnitude and true frequency
+        m_magnitudes[i] = magnitude;
+        m_frequencies[i] = temp;
     }
     //Serial.println();
 
+    // do the actual pitchshifting
+    for (int i = 0; i < HALF_FRAME_SIZE; i++) {
+        uint16_t index = i * m_pitchShiftFactor;
+        if (index <= HALF_FRAME_SIZE) {
+            m_synthesisMagnitudes[index] += m_magnitudes[i];
+            m_synthesisFrequencies[index] = m_frequencies[i] * m_pitchShiftFactor;
+        }
+    }
+
+    // synthesis the signal
+    for (int i = 0; i < HALF_FRAME_SIZE; i++) {
+        // get magnitude and true frquency from the synthesis array
+        float32_t magnitude = m_synthesisMagnitudes[i];
+        float32_t temp = m_synthesisFrequencies[i];
+
+        // subtract bin mid frequency
+        temp -= static_cast<float32_t>(i) * m_binFrequencyWidth;
+
+        // get bin deviation from freq deviation
+        temp /= m_binFrequencyWidth;
+
+        // take oversamping into account
+        temp = 2.0 * M_PI * temp / OVERSAMPLING_FACTOR;
+
+        // add the overlap phase advance back in
+        temp += static_cast<float32_t>(i) * m_omega;
+
+        // accumulate delta phase to get bin phase
+        m_phaseSum[i] += temp;
+        temp = m_phaseSum[i];
+
+        // compute real and imaginary part and re-interleave
+        m_floatComplexBuffer[i * 2] = magnitude * std::cos(temp);
+        m_floatComplexBuffer[i * 2 + 1] = magnitude * std::sin(temp);
+    }
+
+    // zero negative frequencies 
+    for (int i = FRAME_SIZE /* + 2 only if <= */; i < 2 * FRAME_SIZE; i++)
+        m_floatComplexBuffer[i] = 0.f;
+
     // do the ifft
     arm_rfft_f32(&m_ifftInst, m_floatComplexBuffer, m_floatOutBuffer);
+
+    // apply window function again
+    arm_mult_f32(m_floatOutBuffer, const_cast<float*>(HannWindow2048), m_floatOutBuffer, FRAME_SIZE);
 
     // Serial.println("IFFT result: ");
     // for (int i = 0; i < FFT_LENGTH; i++)

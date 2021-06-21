@@ -10,8 +10,11 @@
 class FFT : public AudioStream
 {
 public:
-    FFT() : AudioStream(1, inputQueueArray),
-            m_offset{0}
+    FFT(uint32_t sampleRate, float32_t pitchShiftFactor) :
+        AudioStream(1, inputQueueArray),
+        m_binFrequencyWidth{static_cast<float32_t>(sampleRate / FRAME_SIZE)},
+        m_pitchShiftFactor(pitchShiftFactor),
+        m_offset{0}
     {
         // initialize FFTs
         arm_status status = arm_rfft_init_f32(&m_fftInst, &m_fftComplexInst, FRAME_SIZE, 0, 1);
@@ -30,6 +33,12 @@ public:
         std::memset(m_inputBuffer, 0, sizeof m_inputBuffer);
         std::memset(m_outputBuffer, 0, sizeof m_outputBuffer);
         std::memset(m_overlapBuffer, 0, sizeof m_overlapBuffer);
+        std::memset(m_previousPhases, 0, sizeof m_previousPhases);
+        std::memset(m_magnitudes, 0, sizeof m_magnitudes);
+        std::memset(m_frequencies, 0, sizeof m_frequencies);
+        std::memset(m_synthesisMagnitudes, 0, sizeof m_synthesisMagnitudes);
+        std::memset(m_synthesisFrequencies, 0, sizeof m_synthesisFrequencies);
+        std::memset(m_phaseSum, 0, sizeof m_phaseSum);
     }
 
     void update(void);
@@ -42,10 +51,20 @@ private:
     static const uint16_t FRAME_OVERLAP = FRAME_SIZE - HOP_SIZE;
     static const uint16_t HALF_FRAME_SIZE = FRAME_SIZE / 2;
 
+    const float32_t m_omega = 2.0 * M_PI * HOP_SIZE / FRAME_SIZE;  // omega is the nominal (expected) phase increment for each FFT bin at the given analysis hop size
+    const float32_t m_binFrequencyWidth;
+    const float32_t m_pitchShiftFactor;
+
     uint16_t m_offset;
     int16_t m_inputBuffer[FRAME_SIZE] __attribute__ ((aligned(4)));
     int16_t m_outputBuffer[FRAME_SIZE] __attribute__ ((aligned(4)));
     float32_t m_floatInBuffer[FRAME_SIZE] __attribute__ ((aligned(4)));
+    float32_t m_previousPhases[HALF_FRAME_SIZE] __attribute__ ((aligned(4)));
+    float32_t m_magnitudes[HALF_FRAME_SIZE] __attribute__ ((aligned(4)));
+    float32_t m_frequencies[HALF_FRAME_SIZE] __attribute__ ((aligned(4)));
+    float32_t m_synthesisMagnitudes[HALF_FRAME_SIZE] __attribute__ ((aligned(4)));
+    float32_t m_synthesisFrequencies[HALF_FRAME_SIZE] __attribute__ ((aligned(4)));
+    float32_t m_phaseSum[HALF_FRAME_SIZE] __attribute__ ((aligned(4)));
     float32_t m_floatComplexBuffer[2 * FRAME_SIZE] __attribute__ ((aligned(4)));
     float32_t m_floatOutBuffer[FRAME_SIZE] __attribute__ ((aligned(4)));
     int16_t m_overlapBuffer[FRAME_OVERLAP] __attribute__ ((aligned(4)));

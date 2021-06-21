@@ -11,21 +11,21 @@
 
 
 const int micInput = AUDIO_INPUT_MIC;
-//const int sampleRate = 44100;
-const int sampleRate = 192000;
+const int sampleRate = 44100;
+//const int sampleRate = 192000;
 
 elapsedMillis performanceStatsClock;
 
+
 AudioControlSGTL5000     audioShield;
 AudioInputI2S            audioInput;
-FFT                      fft;
+FFT                      fft(sampleRate, 1.5f);
 Counter                  counter;
 Printer                  printer;
 AudioOutputI2S           audioOutput;
 AudioSynthWaveformSine   sine;
 AudioRecordQueue         queue;
 WavFileWriter            wavWriter(queue);
-
 
 //AudioConnection    patchCord(audioInput, 0, fft, 0);
 //AudioConnection    patchCord1(audioInput, 0, audioOutput, 0);
@@ -51,7 +51,7 @@ void setup() {
     audioShield.enable();
     audioShield.inputSelect(micInput);
     audioShield.micGain(35);  //0-63
-    audioShield.volume(0.6);  //0-1
+    audioShield.volume(0.2);  //0-1
 
     sine.frequency(200 * (AUDIO_SAMPLE_RATE_EXACT / sampleRate));
 
