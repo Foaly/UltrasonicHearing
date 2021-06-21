@@ -22,7 +22,8 @@ void FFT::update(void)
 #if defined(__ARM_ARCH_7EM__)
     // get the input block data
     for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-        const uint16_t index = i + m_offset + HALF_FFT_LENGTH; // fill the second half of the buffer, so we can easier overlap and add later
+        // fill the input buffer from the back with a chunck of length HOP_SIZE, so we can easier overlap and add later
+        const uint16_t index = i + m_offset + FRAME_OVERLAP;
         m_inputBuffer[index] = input_block->data[i];
     }
 
@@ -38,7 +39,7 @@ void FFT::update(void)
 
     // check if we collected enough buffers for another fft
     m_offset += AUDIO_BLOCK_SAMPLES;
-    if (m_offset < HALF_FFT_LENGTH) {
+    if (m_offset < HOP_SIZE) {
         return;
     }
     m_offset = 0;
@@ -46,8 +47,8 @@ void FFT::update(void)
     // convert buffer to float
     arm_q15_to_float(m_inputBuffer, m_floatInBuffer, FRAME_SIZE);
 
-    // for the next fft move the second half of the input buffer to the first half ("overlap")
-    std::memcpy(m_inputBuffer, m_inputBuffer + HALF_FFT_LENGTH, sizeof(int16_t) * HALF_FFT_LENGTH);
+    // move a chunck of length FRAME_OVERLAP by HOP_SIZE to the front of the input buffer for the next fft
+    std::memmove(m_inputBuffer, m_inputBuffer + HOP_SIZE, sizeof(int16_t) * FRAME_OVERLAP);
 
     // apply window function
     arm_mult_f32(m_floatInBuffer, const_cast<float*>(HannWindow2048), m_floatInBuffer, FRAME_SIZE);
@@ -93,16 +94,16 @@ void FFT::update(void)
     // Serial.println();
 
     // convert floats back to int
-    // add the second half of the previous ifft output to the first half of the new output ("add")
-    for (int i = 0; i < HALF_FFT_LENGTH; i++) {
     arm_float_to_q15(m_floatOutBuffer, m_outputBuffer, FRAME_SIZE);
 
+    // add overlap of the previous output the new output
+    for (int i = 0; i < FRAME_OVERLAP; i++) {
         // TODO: this could be optimized
-        m_outputBuffer[i] += m_addBuffer[i];
+        m_outputBuffer[i] += m_overlapBuffer[i];
     }
 
-    // save the second half of ifft output
-    std::memcpy(m_addBuffer, m_outputBuffer + HALF_FFT_LENGTH, sizeof(int16_t) * HALF_FFT_LENGTH);
+    // save the overlap for the next round
+    std::memcpy(m_overlapBuffer, m_outputBuffer + HOP_SIZE, sizeof(int16_t) * FRAME_OVERLAP);    
 
 #else
     release(input_block);
