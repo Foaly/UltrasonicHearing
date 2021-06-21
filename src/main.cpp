@@ -1,13 +1,18 @@
 #include <Arduino.h>
+#include <elapsedMillis.h>
 
 #include <Audio.h>
 #include <Wire.h>
 
 #include <FFT.hpp>
 #include <DebugBlocks.hpp>
+#include <WavFileWriter.hpp>
 
 
 const int micInput = AUDIO_INPUT_MIC;
+const int sampleRate = 44100;
+
+elapsedMillis performanceStatsClock;
 
 AudioControlSGTL5000     audioShield;
 AudioInputI2S            audioInput;
@@ -16,6 +21,9 @@ Counter                  counter;
 Printer                  printer;
 AudioOutputI2S           audioOutput;
 AudioSynthWaveformSine   sine;
+AudioRecordQueue         queue;
+WavFileWriter            wavWriter(queue);
+
 
 //AudioConnection    patchCord(audioInput, 0, fft, 0);
 //AudioConnection    patchCord1(audioInput, 0, audioOutput, 0);
@@ -26,6 +34,7 @@ AudioSynthWaveformSine   sine;
 
 AudioConnection      sineToFFT(sine, 0, fft, 0);
 AudioConnection      fftToOut(fft, 0, audioOutput, 0);
+AudioConnection      fftToWav(fft, 0, queue, 0);
 //AudioConnection      fftToPrinter(fft, 0, printer, 0);
 
 
@@ -49,8 +58,29 @@ void setup() {
 
 
 void loop() {
-    printPerformanceData();
-    delay(500);
+    if(performanceStatsClock > 500) {
+        printPerformanceData();
+        performanceStatsClock = 0;
+    }
+
+    if (Serial.available() > 0) {
+        // read the incoming byte
+        byte incomingByte = Serial.read();
+
+        if ( incomingByte == 'r' ) {
+            if (!wavWriter.isWriting()) {
+                Serial.println("Recording started!");
+                wavWriter.open("Ultra.wav", sampleRate, 1);
+            }
+            else {
+                Serial.println("Recording stopped!");
+                wavWriter.close();
+            }
+        }
+    }
+
+    if (wavWriter.isWriting())
+        wavWriter.update();
 }
 
 
