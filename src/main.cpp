@@ -7,10 +7,12 @@
 #include <FFT.hpp>
 #include <DebugBlocks.hpp>
 #include <WavFileWriter.hpp>
+#include <utils.hpp>
 
 
 const int micInput = AUDIO_INPUT_MIC;
-const int sampleRate = 44100;
+//const int sampleRate = 44100;
+const int sampleRate = 192000;
 
 elapsedMillis performanceStatsClock;
 
@@ -51,7 +53,11 @@ void setup() {
     audioShield.micGain(35);  //0-63
     audioShield.volume(0.6);  //0-1
 
-    sine.frequency(200);
+    sine.frequency(200 * (AUDIO_SAMPLE_RATE_EXACT / sampleRate));
+
+    setI2SFreq(sampleRate);
+    Serial.print("Running at samplerate: ");
+    Serial.println(sampleRate);
 
     Serial.println("Done initializing! Starting now!");
 }
