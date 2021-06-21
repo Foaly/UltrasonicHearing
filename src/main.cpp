@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <elapsedMillis.h>
+#include <cmath>
 
 #include <Audio.h>
 #include <Wire.h>
@@ -14,12 +15,15 @@ const int micInput = AUDIO_INPUT_MIC;
 const int sampleRate = 44100;
 //const int sampleRate = 192000;
 
+const uint16_t semitones = 6;  // shift in semitones
+const float32_t pitchShiftFactor = std::pow(2., semitones / 12.);
+
 elapsedMillis performanceStatsClock;
 
 
 AudioControlSGTL5000     audioShield;
 AudioInputI2S            audioInput;
-FFT                      fft(sampleRate, 1.5f);
+FFT                      fft(sampleRate, pitchShiftFactor);
 Counter                  counter;
 Printer                  printer;
 AudioOutputI2S           audioOutput;
