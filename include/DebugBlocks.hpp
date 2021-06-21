@@ -9,7 +9,7 @@ class Counter : public AudioStream
 {
 public:
     Counter() : AudioStream(0, NULL),
-    m_counter{0}
+    m_counter{1}
     {}
     
     void update(void){
