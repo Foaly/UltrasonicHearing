@@ -44,13 +44,13 @@ void FFT::update(void)
     m_offset = 0;
 
     // convert buffer to float
-    arm_q15_to_float(m_inputBuffer, m_floatInBuffer, FFT_LENGTH);
+    arm_q15_to_float(m_inputBuffer, m_floatInBuffer, FRAME_SIZE);
 
     // for the next fft move the second half of the input buffer to the first half ("overlap")
     std::memcpy(m_inputBuffer, m_inputBuffer + HALF_FFT_LENGTH, sizeof(int16_t) * HALF_FFT_LENGTH);
 
     // apply window function
-    arm_mult_f32(m_floatInBuffer, const_cast<float*>(HannWindow2048), m_floatInBuffer, FFT_LENGTH);
+    arm_mult_f32(m_floatInBuffer, const_cast<float*>(HannWindow2048), m_floatInBuffer, FRAME_SIZE);
 
     // Serial.println("Converted to float: ");
     // for (int i = 0; i < FFT_LENGTH; i++)
@@ -93,10 +93,10 @@ void FFT::update(void)
     // Serial.println();
 
     // convert floats back to int
-    arm_float_to_q15(m_floatOutBuffer, m_outputBuffer, FFT_LENGTH);
-    
     // add the second half of the previous ifft output to the first half of the new output ("add")
     for (int i = 0; i < HALF_FFT_LENGTH; i++) {
+    arm_float_to_q15(m_floatOutBuffer, m_outputBuffer, FRAME_SIZE);
+
         // TODO: this could be optimized
         m_outputBuffer[i] += m_addBuffer[i];
     }
