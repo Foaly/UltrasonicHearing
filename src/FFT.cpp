@@ -112,6 +112,8 @@ void FFT::update(void)
     //Serial.println();
 
     // do the actual pitchshifting
+    std::memset(m_synthesisMagnitudes, 0, sizeof m_synthesisMagnitudes);
+    std::memset(m_synthesisFrequencies, 0, sizeof m_synthesisFrequencies);
     for (int i = 0; i < HALF_FRAME_SIZE; i++) {
         uint16_t index = i * m_pitchShiftFactor;
         if (index <= HALF_FRAME_SIZE) {
