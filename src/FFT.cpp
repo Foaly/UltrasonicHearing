@@ -73,8 +73,12 @@ void FFT::update(void)
     // the FFT output is complex and in the following format
     // {real(0), imag(0), real(1), imag(1), ...}
     // real[0] represents the DC offset, and imag[0] should be 0
+#if defined(KINETISK)
     arm_rfft_f32(&m_fftInst, m_floatInBuffer, m_floatComplexBuffer);
-
+#elif defined(__IMXRT1062__)
+    arm_rfft_fast_f32(&m_fftInst, m_floatInBuffer, m_floatComplexBuffer, 0);
+#endif
+    
 
     // analyse the lower half of the signal (upper half is the same but mirrored)
     //Serial.println("Magnitues: ");
@@ -154,7 +158,11 @@ void FFT::update(void)
         m_floatComplexBuffer[i] = 0.f;
 
     // do the ifft
+#if defined(KINETISK)
     arm_rfft_f32(&m_ifftInst, m_floatComplexBuffer, m_floatOutBuffer);
+#elif defined(__IMXRT1062__)
+    arm_rfft_fast_f32(&m_fftInst, m_floatComplexBuffer, m_floatOutBuffer, 1);
+#endif
 
     // apply window function again
     arm_mult_f32(m_floatOutBuffer, const_cast<float*>(HannWindow2048), m_floatOutBuffer, FRAME_SIZE);

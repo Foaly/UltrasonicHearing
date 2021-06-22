@@ -16,7 +16,8 @@ public:
         m_pitchShiftFactor(pitchShiftFactor),
         m_offset{0}
     {
-        // initialize FFTs
+        // initialize FFT
+#if defined(KINETISK)
         arm_status status = arm_rfft_init_f32(&m_fftInst, &m_fftComplexInst, FRAME_SIZE, 0, 1);
         if (status == ARM_MATH_SUCCESS)
             Serial.println("FFT initilized!");
@@ -28,6 +29,13 @@ public:
             Serial.println("iFFT initilized!");
         else if (status == ARM_MATH_ARGUMENT_ERROR)
             Serial.println("iFFT size not supported");
+#elif defined(__IMXRT1062__)
+        arm_status status = arm_rfft_fast_init_f32(&m_fftInst, FRAME_SIZE);
+        if (status == ARM_MATH_SUCCESS)
+            Serial.println("FFT initilized!");
+        else if (status == ARM_MATH_ARGUMENT_ERROR)
+            Serial.println("FFT size not supported");
+#endif
 
         // initialize buffers
         std::memset(m_inputBuffer, 0, sizeof m_inputBuffer);
@@ -69,10 +77,14 @@ private:
     float32_t m_floatOutBuffer[FRAME_SIZE] __attribute__ ((aligned(4)));
     int16_t m_overlapBuffer[FRAME_OVERLAP] __attribute__ ((aligned(4)));
 
+#if defined(KINETISK)
     arm_rfft_instance_f32 m_fftInst;
     arm_cfft_radix4_instance_f32 m_fftComplexInst;
     arm_rfft_instance_f32 m_ifftInst;
     arm_cfft_radix4_instance_f32 m_ifftComplexInst;
+#elif defined(__IMXRT1062__)
+    arm_rfft_fast_instance_f32 m_fftInst;
+#endif
 };
 
 #endif // FFT_HPP
