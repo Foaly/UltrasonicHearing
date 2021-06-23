@@ -77,12 +77,12 @@ private:
     float32_t m_floatOutBuffer[FRAME_SIZE] __attribute__ ((aligned(4)));
     int16_t m_overlapBuffer[FRAME_OVERLAP] __attribute__ ((aligned(4)));
 
-#if defined(KINETISK)
+#if defined(KINETISK)  // Teensy 3.x
     arm_rfft_instance_f32 m_fftInst;
     arm_cfft_radix4_instance_f32 m_fftComplexInst;
     arm_rfft_instance_f32 m_ifftInst;
     arm_cfft_radix4_instance_f32 m_ifftComplexInst;
-#elif defined(__IMXRT1062__)
+#elif defined(__IMXRT1062__)  // Teensy 4.x
     arm_rfft_fast_instance_f32 m_fftInst;
 #endif
 };

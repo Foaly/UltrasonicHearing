@@ -27,18 +27,13 @@ void FFT::update(void)
         return;
     }
 
-#if defined(__ARM_ARCH_7EM__)
+#if defined(__ARM_ARCH_7EM__)  // Armv7-M (Cortex-M4) with FPU
     // get the input block data
-    for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-        // fill the input buffer from the back with a chunck of length HOP_SIZE, so we can easier overlap and add later
-        const uint16_t index = i + m_offset + FRAME_OVERLAP;
-        m_inputBuffer[index] = input_block->data[i];
-    }
+    // fill the input buffer from the back with a chunck of length HOP_SIZE, so we can easier overlap and add later
+    std::memcpy(m_inputBuffer + m_offset + FRAME_OVERLAP, input_block->data, sizeof(int16_t) * AUDIO_BLOCK_SAMPLES);
 
     // fill the output block
-    for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-        output_block->data[i] = m_outputBuffer[i + m_offset];
-    }
+    std::memcpy(output_block->data, m_outputBuffer + m_offset, sizeof(int16_t) * AUDIO_BLOCK_SAMPLES);
 
     // send out the audio block
     transmit(output_block, 0);
@@ -141,9 +136,8 @@ void FFT::update(void)
         m_floatComplexBuffer[i * 2 + 1] = magnitude * std::sin(temp);
     }
 
-    // zero negative frequencies 
-    for (int i = FRAME_SIZE /* + 2 only if <= */; i < 2 * FRAME_SIZE; i++)
-        m_floatComplexBuffer[i] = 0.f;
+    // zero negative frequencies
+    std::memset(m_floatComplexBuffer + FRAME_SIZE, 0, sizeof(float32_t) * FRAME_SIZE);
 
     // do the ifft
 #if defined(KINETISK)
@@ -159,10 +153,7 @@ void FFT::update(void)
     arm_float_to_q15(m_floatOutBuffer, m_outputBuffer, FRAME_SIZE);
 
     // add overlap of the previous output the new output
-    for (int i = 0; i < FRAME_OVERLAP; i++) {
-        // TODO: this could be optimized
-        m_outputBuffer[i] += m_overlapBuffer[i];
-    }
+    arm_add_q15(m_outputBuffer, m_overlapBuffer, m_outputBuffer, FRAME_OVERLAP);
 
     // save the overlap for the next round
     std::memcpy(m_overlapBuffer, m_outputBuffer + HOP_SIZE, sizeof(int16_t) * FRAME_OVERLAP);    
