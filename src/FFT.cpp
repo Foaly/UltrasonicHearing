@@ -61,14 +61,6 @@ void FFT::update(void)
     // apply window function
     arm_mult_f32(m_floatInBuffer, const_cast<float*>(HannWindow2048), m_floatInBuffer, FRAME_SIZE);
 
-    // Serial.println("Converted to float: ");
-    // for (int i = 0; i < FFT_LENGTH; i++)
-    // {
-    //     Serial.print(m_floatInBuffer[i]);
-    //     Serial.print(", ");
-    // }
-    // Serial.println();
-
     // do the fft
     // the FFT output is complex and in the following format
     // {real(0), imag(0), real(1), imag(1), ...}
@@ -81,7 +73,6 @@ void FFT::update(void)
     
 
     // analyse the lower half of the signal (upper half is the same but mirrored)
-    //Serial.println("Magnitues: ");
     for (int i = 0; i < HALF_FRAME_SIZE; i++) {
         // deinterlace the FFT result
         float32_t real = m_floatComplexBuffer[i * 2];
@@ -90,8 +81,6 @@ void FFT::update(void)
         // compute phase and magnitude
         float32_t magnitude = 2.0f * std::sqrt(real * real + imag * imag);
         float32_t phase = std::atan2(imag, real);
-        //Serial.print(magnitude);
-        //Serial.print(", ");
 
         // compute phase difference
         float32_t temp = phase - m_previousPhases[i];
@@ -113,7 +102,6 @@ void FFT::update(void)
         m_magnitudes[i] = magnitude;
         m_frequencies[i] = temp;
     }
-    //Serial.println();
 
     // do the actual pitchshifting
     std::memset(m_synthesisMagnitudes, 0, sizeof m_synthesisMagnitudes);
@@ -166,15 +154,6 @@ void FFT::update(void)
 
     // apply window function again
     arm_mult_f32(m_floatOutBuffer, const_cast<float*>(HannWindow2048), m_floatOutBuffer, FRAME_SIZE);
-
-    // Serial.println("IFFT result: ");
-    // for (int i = 0; i < FFT_LENGTH; i++)
-    // {
-    //     Serial.print(m_floatOutBuffer[i]);
-    //     Serial.print(", ");
-    // }
-    // Serial.println();
-    // Serial.println();
 
     // convert floats back to int
     arm_float_to_q15(m_floatOutBuffer, m_outputBuffer, FRAME_SIZE);
