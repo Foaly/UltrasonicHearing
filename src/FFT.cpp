@@ -132,8 +132,8 @@ void FFT::update(void)
         temp = m_phaseSum[i];
 
         // compute real and imaginary part and re-interleave
-        m_floatComplexBuffer[i * 2] = magnitude * std::cos(temp);
-        m_floatComplexBuffer[i * 2 + 1] = magnitude * std::sin(temp);
+        m_floatComplexBuffer[i * 2] = magnitude * arm_cos_f32(temp);
+        m_floatComplexBuffer[i * 2 + 1] = magnitude * arm_sin_f32(temp);
     }
 
     // zero negative frequencies
