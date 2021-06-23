@@ -15,7 +15,7 @@ const int micInput = AUDIO_INPUT_MIC;
 const int sampleRate = 44100;
 //const int sampleRate = 192000;
 
-const uint16_t semitones = 6;  // shift in semitones
+const int16_t semitones = -6;  // shift in semitones
 const float32_t pitchShiftFactor = std::pow(2., semitones / 12.);
 
 elapsedMillis performanceStatsClock;
