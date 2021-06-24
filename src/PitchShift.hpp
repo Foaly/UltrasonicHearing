@@ -1,5 +1,5 @@
-#ifndef FFT_HPP
-#define FFT_HPP
+#ifndef PITCHSHIFT_HPP
+#define PITCHSHIFT_HPP
 
 #include "Arduino.h"
 #include "AudioStream.h"
@@ -7,10 +7,10 @@
 #include <arm_math.h>
 #include <cstring>
 
-class FFT : public AudioStream
+class PitchShift : public AudioStream
 {
 public:
-    FFT(uint32_t sampleRate, float32_t pitchShiftFactor) :
+    PitchShift(uint32_t sampleRate, float32_t pitchShiftFactor) :
         AudioStream(1, inputQueueArray),
         m_binFrequencyWidth{static_cast<float32_t>(sampleRate / FRAME_SIZE)},
         m_pitchShiftFactor(pitchShiftFactor),
@@ -87,4 +87,4 @@ private:
 #endif
 };
 
-#endif // FFT_HPP
+#endif // PITCHSHIFT_HPP

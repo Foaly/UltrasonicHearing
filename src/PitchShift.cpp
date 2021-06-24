@@ -1,4 +1,4 @@
-#include "FFT.hpp"
+#include "PitchShift.hpp"
 #include "window.hpp"
 
 #include <cmath>
@@ -12,7 +12,7 @@ namespace {
 }
 
 
-void FFT::update(void)
+void PitchShift::update(void)
 {
     // get input block
     audio_block_t *input_block;

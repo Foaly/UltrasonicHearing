@@ -5,7 +5,7 @@
 #include <Audio.h>
 #include <Wire.h>
 
-#include <FFT.hpp>
+#include <PitchShift.hpp>
 #include <DebugBlocks.hpp>
 #include <WavFileWriter.hpp>
 #include <utils.hpp>
@@ -23,7 +23,7 @@ elapsedMillis performanceStatsClock;
 
 AudioControlSGTL5000     audioShield;
 AudioInputI2S            audioInput;
-FFT                      fft(sampleRate, pitchShiftFactor);
+PitchShift               fft(sampleRate, pitchShiftFactor);
 Counter                  counter;
 Printer                  printer;
 AudioOutputI2S           audioOutput;
