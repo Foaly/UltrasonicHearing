@@ -36,6 +36,8 @@ public:
         else if (status == ARM_MATH_ARGUMENT_ERROR)
             Serial.println("FFT size not supported");
 #endif
+        // generate window
+        generateWindow();
 
         // initialize buffers
         std::memset(m_inputBuffer, 0, sizeof m_inputBuffer);
@@ -52,8 +54,10 @@ public:
     void update(void);
 
 private:
+    void generateWindow();
+
     audio_block_t *inputQueueArray[1];
-    static const uint16_t FRAME_SIZE = 2048; // FFT length, has to be one of 128, 512, 2048
+    static const uint16_t FRAME_SIZE = 1024; // FFT length, Teensy 3.x supports only 128, 512, 2048, but Teensy 4.x supports 32, 64, 128, 256, 512, 1024, 2048, 4096
     static const uint16_t OVERSAMPLING_FACTOR = 4; // has to be power of 2
     static const uint16_t HOP_SIZE = FRAME_SIZE / OVERSAMPLING_FACTOR;
     static const uint16_t FRAME_OVERLAP = FRAME_SIZE - HOP_SIZE;
@@ -67,6 +71,7 @@ private:
     int16_t m_inputBuffer[FRAME_SIZE] __attribute__ ((aligned(4)));
     int16_t m_outputBuffer[FRAME_SIZE] __attribute__ ((aligned(4)));
     float32_t m_floatInBuffer[FRAME_SIZE] __attribute__ ((aligned(4)));
+    float32_t m_window[FRAME_SIZE] __attribute__ ((aligned(4)));
     float32_t m_previousPhases[HALF_FRAME_SIZE] __attribute__ ((aligned(4)));
     float32_t m_magnitudes[HALF_FRAME_SIZE] __attribute__ ((aligned(4)));
     float32_t m_frequencies[HALF_FRAME_SIZE] __attribute__ ((aligned(4)));

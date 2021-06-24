@@ -1,5 +1,4 @@
 #include "PitchShift.hpp"
-#include "window.hpp"
 
 #include <cmath>
 
@@ -8,6 +7,16 @@ namespace {
     // Wrap an arbitrary phase in radians into the range ]-pi, pi]
     double wrap_phase(float32_t phase){
         return std::fmod(phase + M_PI, -2.0 * M_PI) + M_PI;
+    }
+}
+
+
+void PitchShift::generateWindow()
+{
+    // generate a Hann window with 0 on both ends
+    for(int i = 0; i < FRAME_SIZE; i++)
+    {
+        m_window[i] = 0.5 * (1.0 - std::cos(2.0 * M_PI * (static_cast<double>(i) / (FRAME_SIZE - 1))));
     }
 }
 
@@ -54,7 +63,7 @@ void PitchShift::update(void)
     std::memmove(m_inputBuffer, m_inputBuffer + HOP_SIZE, sizeof(int16_t) * FRAME_OVERLAP);
 
     // apply window function
-    arm_mult_f32(m_floatInBuffer, const_cast<float*>(HannWindow2048), m_floatInBuffer, FRAME_SIZE);
+    arm_mult_f32(m_floatInBuffer, m_window, m_floatInBuffer, FRAME_SIZE);
 
     // do the fft
     // the FFT output is complex and in the following format
@@ -65,7 +74,6 @@ void PitchShift::update(void)
 #elif defined(__IMXRT1062__)
     arm_rfft_fast_f32(&m_fftInst, m_floatInBuffer, m_floatComplexBuffer, 0);
 #endif
-    
 
     // analyse the lower half of the signal (upper half is the same but mirrored)
     for (int i = 0; i < HALF_FRAME_SIZE; i++) {
@@ -147,7 +155,7 @@ void PitchShift::update(void)
 #endif
 
     // apply window function again
-    arm_mult_f32(m_floatOutBuffer, const_cast<float*>(HannWindow2048), m_floatOutBuffer, FRAME_SIZE);
+    arm_mult_f32(m_floatOutBuffer, m_window, m_floatOutBuffer, FRAME_SIZE);
 
     // convert floats back to int
     arm_float_to_q15(m_floatOutBuffer, m_outputBuffer, FRAME_SIZE);

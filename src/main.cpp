@@ -31,15 +31,16 @@ AudioSynthWaveformSine   sine;
 AudioRecordQueue         queue;
 WavFileWriter            wavWriter(queue);
 
-//AudioConnection    patchCord(audioInput, 0, fft, 0);
 //AudioConnection    patchCord1(audioInput, 0, audioOutput, 0);
 //AudioConnection    patchCord2(audioInput, 1, audioOutput, 1);
 
 //AudioConnection    patchCord(counter, 0, fft, 0);
 //AudioConnection    patchCord1(fft, 0, printer, 0);
 
-AudioConnection      sineToFFT(sine, 0, fft, 0);
+//AudioConnection      sineToFFT(sine, 0, fft, 0);
+AudioConnection      micToFFT(audioInput, 0, fft, 0);
 AudioConnection      fftToOut(fft, 0, audioOutput, 0);
+AudioConnection      fftToOut2(fft, 0, audioOutput, 1);
 AudioConnection      fftToWav(fft, 0, queue, 0);
 //AudioConnection      fftToPrinter(fft, 0, printer, 0);
 
@@ -54,8 +55,8 @@ void setup() {
     AudioMemory(200);
     audioShield.enable();
     audioShield.inputSelect(micInput);
-    audioShield.micGain(35);  //0-63
-    audioShield.volume(0.2);  //0-1
+    audioShield.micGain(45);  //0-63
+    audioShield.volume(0.6);  //0-1
 
     sine.frequency(200 * (AUDIO_SAMPLE_RATE_EXACT / sampleRate));
 
