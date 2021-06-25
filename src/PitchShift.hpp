@@ -10,49 +10,11 @@
 class PitchShift : public AudioStream
 {
 public:
-    PitchShift(uint32_t sampleRate, float32_t pitchShiftFactor) :
-        AudioStream(1, inputQueueArray),
-        m_binFrequencyWidth{static_cast<float32_t>(sampleRate) / FRAME_SIZE},
-        m_pitchShiftFactor(pitchShiftFactor),
-        m_highPassCutoff(0.f),
-        m_offset{0}
-    {
-        // initialize FFT
-#if defined(KINETISK)
-        arm_status status = arm_rfft_init_f32(&m_fftInst, &m_fftComplexInst, FRAME_SIZE, 0, 1);
-        if (status == ARM_MATH_SUCCESS)
-            Serial.println("FFT initilized!");
-        else if (status == ARM_MATH_ARGUMENT_ERROR)
-            Serial.println("FFT size not supported");
-        
-        status = arm_rfft_init_f32(&m_ifftInst, &m_ifftComplexInst, FRAME_SIZE, 1, 1);
-        if (status == ARM_MATH_SUCCESS)
-            Serial.println("iFFT initilized!");
-        else if (status == ARM_MATH_ARGUMENT_ERROR)
-            Serial.println("iFFT size not supported");
-#elif defined(__IMXRT1062__)
-        arm_status status = arm_rfft_fast_init_f32(&m_fftInst, FRAME_SIZE);
-        if (status == ARM_MATH_SUCCESS)
-            Serial.println("FFT initilized!");
-        else if (status == ARM_MATH_ARGUMENT_ERROR)
-            Serial.println("FFT size not supported");
-#endif
-        // generate window
-        generateWindow();
+    PitchShift(uint32_t sampleRate, float32_t pitchShiftFactor);
 
-        // initialize buffers
-        std::memset(m_inputBuffer, 0, sizeof m_inputBuffer);
-        std::memset(m_outputBuffer, 0, sizeof m_outputBuffer);
-        std::memset(m_overlapBuffer, 0, sizeof m_overlapBuffer);
-        std::memset(m_previousPhases, 0, sizeof m_previousPhases);
-        std::memset(m_magnitudes, 0, sizeof m_magnitudes);
-        std::memset(m_frequencies, 0, sizeof m_frequencies);
-        std::memset(m_synthesisMagnitudes, 0, sizeof m_synthesisMagnitudes);
-        std::memset(m_synthesisFrequencies, 0, sizeof m_synthesisFrequencies);
-        std::memset(m_phaseSum, 0, sizeof m_phaseSum);
-    }
-
+    // processing loop called by the audio engine
     void update(void);
+
     // A high pass filter that is applied during the processing.
     // The cutoff is specified in Hertz in the range before the pitchshifting happens.
     void setHighPassCutoff(float cutoff);
