@@ -12,7 +12,7 @@ class PitchShift : public AudioStream
 public:
     PitchShift(uint32_t sampleRate, float32_t pitchShiftFactor) :
         AudioStream(1, inputQueueArray),
-        m_binFrequencyWidth{static_cast<float32_t>(sampleRate / FRAME_SIZE)},
+        m_binFrequencyWidth{static_cast<float32_t>(sampleRate) / FRAME_SIZE},
         m_pitchShiftFactor(pitchShiftFactor),
         m_offset{0}
     {
@@ -63,7 +63,7 @@ private:
     static const uint16_t FRAME_OVERLAP = FRAME_SIZE - HOP_SIZE;
     static const uint16_t HALF_FRAME_SIZE = FRAME_SIZE / 2;
 
-    const float32_t m_omega = 2.0 * M_PI * HOP_SIZE / FRAME_SIZE;  // omega is the nominal (expected) phase increment for each FFT bin at the given analysis hop size
+    const float32_t m_omega = 2.0 * M_PI * static_cast<float32_t>(HOP_SIZE) / FRAME_SIZE;  // omega is the nominal (expected) phase increment for each FFT bin at the given analysis hop size
     const float32_t m_binFrequencyWidth;
     const float32_t m_pitchShiftFactor;
 

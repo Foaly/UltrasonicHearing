@@ -117,7 +117,7 @@ void PitchShift::update(void)
         }
     }
 
-    // synthesis the signal
+    // synthesize the signal
     for (int i = 0; i < HALF_FRAME_SIZE; i++) {
         // get magnitude and true frquency from the synthesis array
         float32_t magnitude = m_synthesisMagnitudes[i];
