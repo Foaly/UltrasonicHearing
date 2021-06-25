@@ -45,19 +45,19 @@ void PitchShift::update(void)
     }
 
 #if defined(__ARM_ARCH_7EM__)  // Armv7-M (Cortex-M4) with FPU
-    // get the input block data
-    // fill the input buffer from the back with a chunck of length HOP_SIZE, so we can easier overlap and add later
+    // copy the input block data into the input buffer 
+    // starting with an offset of FRAME_OVERLAP iteratively filling a chunck of length HOP_SIZE (making overlap & add easier later)
     std::memcpy(m_inputBuffer + m_offset + FRAME_OVERLAP, input_block->data, sizeof(int16_t) * AUDIO_BLOCK_SAMPLES);
 
     // fill the output block
     std::memcpy(output_block->data, m_outputBuffer + m_offset, sizeof(int16_t) * AUDIO_BLOCK_SAMPLES);
 
-    // send out the audio block
+    // send out the output block
     transmit(output_block, 0);
     release(input_block);
     release(output_block);
 
-    // check if we collected enough buffers for another fft
+    // check if we have collected enough new buffers for another FFT
     m_offset += AUDIO_BLOCK_SAMPLES;
     if (m_offset < HOP_SIZE) {
         return;
@@ -67,13 +67,13 @@ void PitchShift::update(void)
     // convert buffer to float
     arm_q15_to_float(m_inputBuffer, m_floatInBuffer, FRAME_SIZE);
 
-    // move a chunck of length FRAME_OVERLAP by HOP_SIZE to the front of the input buffer for the next fft
+    // as preparation for the next FFT, move a chunck of length FRAME_OVERLAP by HOP_SIZE to the beginning of the input buffer
     std::memmove(m_inputBuffer, m_inputBuffer + HOP_SIZE, sizeof(int16_t) * FRAME_OVERLAP);
 
-    // apply window function
+    // apply the window function
     arm_mult_f32(m_floatInBuffer, m_window, m_floatInBuffer, FRAME_SIZE);
 
-    // do the fft
+    // do the FFT
     // the FFT output is complex and in the following format
     // {real(0), imag(0), real(1), imag(1), ...}
     // real[0] represents the DC offset, and imag[0] should be 0
@@ -83,7 +83,7 @@ void PitchShift::update(void)
     arm_rfft_fast_f32(&m_fftInst, m_floatInBuffer, m_floatComplexBuffer, 0);
 #endif
 
-    // analyse the lower half of the signal (upper half is the same but mirrored)
+    // analyse the lower half of the signal (upper half is the same just mirrored)
     for (int i = 0; i < HALF_FRAME_SIZE; i++) {
         // deinterlace the FFT result
         float32_t real = m_floatComplexBuffer[i * 2];
@@ -129,7 +129,7 @@ void PitchShift::update(void)
 
     // synthesize the signal
     for (int i = 0; i < HALF_FRAME_SIZE; i++) {
-        // get magnitude and true frquency from the synthesis array
+        // get new magnitude and true frequency from the synthesis array
         float32_t magnitude = m_synthesisMagnitudes[i];
         float32_t temp = m_synthesisFrequencies[i];
 
@@ -149,7 +149,7 @@ void PitchShift::update(void)
         m_phaseSum[i] += temp;
         temp = m_phaseSum[i];
 
-        // compute real and imaginary part and re-interleave
+        // compute new real and imaginary part and re-interleave
         m_floatComplexBuffer[i * 2] = magnitude * arm_cos_f32(temp);
         m_floatComplexBuffer[i * 2 + 1] = magnitude * arm_sin_f32(temp);
     }
@@ -157,20 +157,20 @@ void PitchShift::update(void)
     // zero negative frequencies
     std::memset(m_floatComplexBuffer + FRAME_SIZE, 0, sizeof(float32_t) * FRAME_SIZE);
 
-    // do the ifft
+    // do the iFFT
 #if defined(KINETISK)
     arm_rfft_f32(&m_ifftInst, m_floatComplexBuffer, m_floatOutBuffer);
 #elif defined(__IMXRT1062__)
     arm_rfft_fast_f32(&m_fftInst, m_floatComplexBuffer, m_floatOutBuffer, 1);
 #endif
 
-    // apply window function again
+    // apply window function again (because we synthesized the signal from scratch)
     arm_mult_f32(m_floatOutBuffer, m_window, m_floatOutBuffer, FRAME_SIZE);
 
     // convert floats back to int
     arm_float_to_q15(m_floatOutBuffer, m_outputBuffer, FRAME_SIZE);
 
-    // add overlap of the previous output the new output
+    // add overlap of the previous output to the new output
     arm_add_q15(m_outputBuffer, m_overlapBuffer, m_outputBuffer, FRAME_OVERLAP);
 
     // save the overlap for the next round
