@@ -64,6 +64,8 @@ void setup() {
     Serial.print("Running at samplerate: ");
     Serial.println(sampleRate);
 
+    fft.setHighPassCutoff(22000.f);
+
     sine.frequency(200 * (AUDIO_SAMPLE_RATE_EXACT / sampleRate));
 
     Serial.println("Done initializing! Starting now!");

@@ -14,6 +14,7 @@ public:
         AudioStream(1, inputQueueArray),
         m_binFrequencyWidth{static_cast<float32_t>(sampleRate) / FRAME_SIZE},
         m_pitchShiftFactor(pitchShiftFactor),
+        m_highPassCutoff(0.f),
         m_offset{0}
     {
         // initialize FFT
@@ -52,6 +53,9 @@ public:
     }
 
     void update(void);
+    // A high pass filter that is applied during the processing.
+    // The cutoff is specified in Hertz in the range before the pitchshifting happens.
+    void setHighPassCutoff(float cutoff);
 
 private:
     void generateWindow();
@@ -66,6 +70,7 @@ private:
     const float32_t m_omega = 2.0 * M_PI * static_cast<float32_t>(HOP_SIZE) / FRAME_SIZE;  // omega is the nominal (expected) phase increment for each FFT bin at the given analysis hop size
     const float32_t m_binFrequencyWidth;
     const float32_t m_pitchShiftFactor;
+    float32_t m_highPassCutoff;
 
     uint16_t m_offset;
     int16_t m_inputBuffer[FRAME_SIZE] __attribute__ ((aligned(4)));

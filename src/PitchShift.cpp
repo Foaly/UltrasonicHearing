@@ -21,6 +21,14 @@ void PitchShift::generateWindow()
 }
 
 
+void PitchShift::setHighPassCutoff(float cutoff)
+{
+    if (cutoff < 0.f)
+        cutoff = 0.f;
+    m_highPassCutoff = cutoff;
+}
+
+
 void PitchShift::update(void)
 {
     // get input block
@@ -106,10 +114,12 @@ void PitchShift::update(void)
         m_frequencies[i] = temp;
     }
 
-    // do the actual pitchshifting
     std::memset(m_synthesisMagnitudes, 0, sizeof m_synthesisMagnitudes);
     std::memset(m_synthesisFrequencies, 0, sizeof m_synthesisFrequencies);
-    for (int i = 0; i < HALF_FRAME_SIZE; i++) {
+    // apply a high pass filter by zeroing lower FFT bins
+    const uint16_t startIndex = std::round(m_highPassCutoff / m_binFrequencyWidth);
+    for (int i = startIndex; i < HALF_FRAME_SIZE; i++) {
+        // do the actual pitchshifting
         uint16_t index = i * m_pitchShiftFactor;
         if (index <= HALF_FRAME_SIZE) {
             m_synthesisMagnitudes[index] += m_magnitudes[i];
