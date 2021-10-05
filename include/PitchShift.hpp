@@ -23,8 +23,8 @@
 #ifndef PITCHSHIFT_HPP
 #define PITCHSHIFT_HPP
 
-#include "Arduino.h"
-#include "AudioStream.h"
+#include <Arduino.h>
+#include <AudioStream.h>
 
 #include <arm_math.h>
 #include <cstring>

@@ -23,8 +23,8 @@
 #ifndef DEBUGBLOCKS_HPP
 #define DEBUGBLOCKS_HPP
 
-#include "Arduino.h"
-#include "AudioStream.h"
+#include <Arduino.h>
+#include <AudioStream.h>
 
 
 class Counter : public AudioStream
