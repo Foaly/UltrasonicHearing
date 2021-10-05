@@ -85,7 +85,6 @@ bool WavFileWriter::open(const char *fileName, unsigned int sampleRate, unsigned
         return false;
     }
 
-
     // Initialize the SD card
     SPI.setMOSI(SDcard_MOSI_Pin);
     SPI.setSCK(SDcard_SCK_Pin);

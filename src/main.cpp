@@ -37,6 +37,7 @@ const int micInput = AUDIO_INPUT_MIC;
 //const int sampleRate = 44100;
 //const int sampleRate = 96000;
 const int sampleRate = 192000;
+//const int sampleRate = 234000;
 
 const int16_t semitones = -36;  // shift in semitones
 const float32_t pitchShiftFactor = std::pow(2., semitones / 12.);
@@ -131,7 +132,7 @@ void printPerformanceData() {
     Serial.print("all=");
     Serial.print(AudioProcessorUsage());
     Serial.print(",");
-    Serial.print(AudioProcessorUsageMax());
+    Serial.print(AudioProcessorUsageMax()); // estimate of the maximum percentage of CPU time any audio update has ever used (0 to 100)
     Serial.print("    ");
     Serial.print("Audio Memory: ");
     Serial.print(AudioMemoryUsage()); // number of audio blocks currently in use
