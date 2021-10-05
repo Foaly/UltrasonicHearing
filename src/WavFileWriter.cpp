@@ -40,14 +40,14 @@ namespace {
     // const uint8_t SDcard_SCK_Pin   = 14;
 
     // Use these with the Teensy 3.5 & 3.6 internal SD card (Should work, but not yet tested)
-    // const uint8_t SDcard_CS_Pin    = BUILTIN_SDCARD
-    // const uint8_t SDcard_MOSI_Pin  = 11  // not actually used
-    // const uint8_t SDcard_SCK_Pin   = 13  // not actually used
+    // const uint8_t SDcard_CS_Pin    = BUILTIN_SDCARD;
+    // const uint8_t SDcard_MOSI_Pin  = 11;  // not actually used
+    // const uint8_t SDcard_SCK_Pin   = 13;  // not actually used
 
     // Use these for the SD+Wiz820 or other adaptors (Should work, but not yet tested)
-    // const uint8_t SDcard_CS_Pin    =  4
-    // const uint8_t SDcard_MOSI_Pin  = 11
-    // const uint8_t SDcard_SCK_Pin   = 13
+    // const uint8_t SDcard_CS_Pin    =  4;
+    // const uint8_t SDcard_MOSI_Pin  = 11;
+    // const uint8_t SDcard_SCK_Pin   = 13;
 
     // The following functions takes integers in host byte order
     // and writes them to a stream as little endian
