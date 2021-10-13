@@ -94,6 +94,38 @@ void PitchShift::setHighPassCutoff(float cutoff)
 }
 
 
+#ifdef UNIT_TEST
+    audio_block_t* PitchShift::allocate()
+    {
+        audio_block_t* block;
+        block = new audio_block_t;
+        std::memset(block->data, 0, sizeof block->data);
+        return block;
+    }
+
+	audio_block_t* PitchShift::receiveReadOnly()
+    {
+        return allocate();
+    }
+
+	void PitchShift::transmit(audio_block_t *block, unsigned char)
+    {
+        Serial.print("outputBlock = [");
+        for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++)
+        {
+            Serial.print(block->data[i]);
+            Serial.print(", ");
+        }
+        Serial.println("]");
+    }
+
+    void PitchShift::release(audio_block_t * block)
+    {
+        delete block;
+    }
+#endif
+
+
 void PitchShift::update(void)
 {
     // get input block

@@ -41,6 +41,14 @@ public:
     // The cutoff is specified in Hertz in the range before the pitchshifting happens.
     void setHighPassCutoff(float cutoff);
 
+#ifdef UNIT_TEST
+    // mock audio engine calls during unit tests
+    audio_block_t* allocate();
+	audio_block_t* receiveReadOnly();
+    void transmit(audio_block_t* block, unsigned char index = 0);
+    void release(audio_block_t* block);
+#endif
+
 private:
     void generateWindow();
 

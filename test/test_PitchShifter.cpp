@@ -33,6 +33,11 @@ uint16_t failedTestCount = 0;
 void test_pitchShifter(void) {
     PitchShift pitchShifter(sampleRate, semitones);
 
+    pitchShifter.update();
+    pitchShifter.update();
+    pitchShifter.update();
+    pitchShifter.update();
+
     TEST_ASSERT_EQUAL(42, 42);
 }
 
