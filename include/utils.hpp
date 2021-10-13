@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Ultrasonic Hearing - Enabling you to extend your senses into 
+// Ultrasonic Hearing - Enabling you to extend your senses into
 // the ultrasonic range using a Teensy 4.1
 // Copyright (C) 2021  Maximilian Wagenbach
 //
@@ -39,7 +39,7 @@ void setI2SFreq(int freq) {
   set_audioClock(c0, c1, c2, true);
   CCM_CS1CDR = (CCM_CS1CDR & ~(CCM_CS1CDR_SAI1_CLK_PRED_MASK | CCM_CS1CDR_SAI1_CLK_PODF_MASK))
        | CCM_CS1CDR_SAI1_CLK_PRED(n1-1) // &0x07
-       | CCM_CS1CDR_SAI1_CLK_PODF(n2-1); // &0x3f 
+       | CCM_CS1CDR_SAI1_CLK_PODF(n2-1); // &0x3f
 //Serial.printf("SetI2SFreq(%d)\n",freq);
 }
 

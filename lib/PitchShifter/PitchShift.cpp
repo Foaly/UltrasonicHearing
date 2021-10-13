@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Ultrasonic Hearing - Enabling you to extend your senses into 
+// Ultrasonic Hearing - Enabling you to extend your senses into
 // the ultrasonic range using a Teensy 4.1
 // Copyright (C) 2021  Maximilian Wagenbach
 //
@@ -47,7 +47,7 @@ PitchShift::PitchShift(uint32_t sampleRate, float32_t pitchShiftFactor) :
         Serial.println("FFT initilized!");
     else if (status == ARM_MATH_ARGUMENT_ERROR)
         Serial.println("FFT size not supported");
-    
+
     status = arm_rfft_init_f32(&m_ifftInst, &m_ifftComplexInst, FRAME_SIZE, 1, 1);
     if (status == ARM_MATH_SUCCESS)
         Serial.println("iFFT initilized!");
@@ -131,7 +131,7 @@ void PitchShift::update(void)
     // get input block
     audio_block_t* input_block;
     input_block = receiveReadOnly();
-    if (!input_block) 
+    if (!input_block)
         return;
 
     // allocate output block
@@ -143,7 +143,7 @@ void PitchShift::update(void)
     }
 
 #if defined(__ARM_ARCH_7EM__)  // Armv7-M (Cortex-M4) with FPU
-    // copy the input block data into the input buffer 
+    // copy the input block data into the input buffer
     // starting with an offset of FRAME_OVERLAP iteratively filling a chunck of length HOP_SIZE (making overlap & add easier later)
     std::memcpy(m_inputBuffer + m_offset + FRAME_OVERLAP, input_block->data, sizeof(int16_t) * AUDIO_BLOCK_SAMPLES);
 
@@ -272,7 +272,7 @@ void PitchShift::update(void)
     arm_add_q15(m_outputBuffer, m_overlapBuffer, m_outputBuffer, FRAME_OVERLAP);
 
     // save the overlap for the next round
-    std::memcpy(m_overlapBuffer, m_outputBuffer + HOP_SIZE, sizeof(int16_t) * FRAME_OVERLAP);    
+    std::memcpy(m_overlapBuffer, m_outputBuffer + HOP_SIZE, sizeof(int16_t) * FRAME_OVERLAP);
 
 #else
     release(input_block);

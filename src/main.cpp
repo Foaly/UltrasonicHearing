@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Ultrasonic Hearing - Enabling you to extend your senses into 
+// Ultrasonic Hearing - Enabling you to extend your senses into
 // the ultrasonic range using a Teensy 4.1
 // Copyright (C) 2021  Maximilian Wagenbach
 //
@@ -75,7 +75,7 @@ void printPerformanceData();
 
 void setup() {
     delay(1000);
-    
+
     Serial.begin(9600);
     AudioMemory(200);
     audioShield.enable();

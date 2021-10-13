@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Ultrasonic Hearing - Enabling you to extend your senses into 
+// Ultrasonic Hearing - Enabling you to extend your senses into
 // the ultrasonic range using a Teensy 4.1
 // Copyright (C) 2021  Maximilian Wagenbach
 //
@@ -33,7 +33,7 @@ public:
     Counter() : AudioStream(0, NULL),
     m_counter{1}
     {}
-    
+
     void update(void){
         // allocate output block
         audio_block_t *output_block;
@@ -59,7 +59,7 @@ class Printer : public AudioStream
 public:
     Printer() : AudioStream(1, inputQueueArray)
     {}
-    
+
     void update(void){
         // get input block
         audio_block_t *input_block;
