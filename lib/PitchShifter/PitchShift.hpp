@@ -35,7 +35,7 @@ public:
     PitchShift(uint32_t sampleRate, float32_t pitchShiftFactor);
 
     // processing loop called by the audio engine
-    void update(void);
+    void update(void) override;
 
     // A high pass filter that is applied during the processing.
     // The cutoff is specified in Hertz in the range before the pitchshifting happens.
