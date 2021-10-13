@@ -97,12 +97,13 @@ void PitchShift::setHighPassCutoff(float cutoff)
 void PitchShift::update(void)
 {
     // get input block
-    audio_block_t *input_block;
+    audio_block_t* input_block;
     input_block = receiveReadOnly();
-    if (!input_block) return;
+    if (!input_block) 
+        return;
 
     // allocate output block
-    audio_block_t *output_block;
+    audio_block_t* output_block;
     output_block = allocate();
     if (!output_block) {
         release(input_block);

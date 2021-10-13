@@ -44,7 +44,7 @@ public:
 private:
     void generateWindow();
 
-    audio_block_t *inputQueueArray[1];
+    audio_block_t* inputQueueArray[1];
     static const uint16_t FRAME_SIZE = 1024; // FFT length, Teensy 3.x supports only 128, 512, 2048, but Teensy 4.x supports 32, 64, 128, 256, 512, 1024, 2048, 4096
     static const uint16_t OVERSAMPLING_FACTOR = 4; // has to be power of 2
     static const uint16_t HOP_SIZE = FRAME_SIZE / OVERSAMPLING_FACTOR;
