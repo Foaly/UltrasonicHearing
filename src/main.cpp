@@ -19,6 +19,15 @@
 //
 //////////////////////////////////////////////////////////////////////
 
+//************************************************************
+// Serial - set to true for debug output, false for no output
+//************************************************************
+// -->  Use DEBUG_SERIAL.println for debugging
+#define DEBUGGING true  
+#define DEBUG_SERIAL \
+  if (DEBUGGING) Serial
+
+const int BAUD = 9600;
 
 #include <Arduino.h>
 #include <elapsedMillis.h>
@@ -32,22 +41,22 @@
 #include <WavFileWriter.hpp>
 #include <utils.hpp>
 
+// --> CONSTANTS in BIG_LETTERS
+const int MIC_INPUT = AUDIO_INPUT_MIC;
+//const int SAMPLE_RATE = 44100;
+//const int SAMPLE_RATE = 96000;
+const int SAMPLE_RATE = 192000;
+//const int SAMPLE_RATE = 234000;
 
-const int micInput = AUDIO_INPUT_MIC;
-//const int sampleRate = 44100;
-//const int sampleRate = 96000;
-const int sampleRate = 192000;
-//const int sampleRate = 234000;
-
-const int16_t semitones = -36;  // shift in semitones
-const float32_t pitchShiftFactor = std::pow(2., semitones / 12.);
+const int16_t SEMITONES = -36;  // shift in SEMITONES
+const float32_t PITCH_SHIFT_FACTOR = std::pow(2., SEMITONES / 12.);
 
 elapsedMillis performanceStatsClock;
 
 
 AudioControlSGTL5000     audioShield;
 AudioInputI2S            audioInput;
-PitchShift               fft(sampleRate, pitchShiftFactor);
+PitchShift               fft(SAMPLE_RATE, PITCH_SHIFT_FACTOR);
 Counter                  counter;
 Printer                  printer;
 AudioOutputI2S           audioOutput;
@@ -76,26 +85,30 @@ void printPerformanceData();
 void setup() {
     delay(1000);
     
-    Serial.begin(9600);
+    Serial.begin(BAUD);
+    // --> No magic numbers
     AudioMemory(200);
     audioShield.enable();
-    audioShield.inputSelect(micInput);
+    audioShield.inputSelect(MIC_INPUT);
+    // --> No magic numbers
     audioShield.micGain(45);  //0-63
+    // --> No magic numbers
     audioShield.volume(0.6);  //0-1
 
-    setI2SFreq(sampleRate);
-    Serial.print("Running at samplerate: ");
-    Serial.println(sampleRate);
-
+    setI2SFreq(SAMPLE_RATE);
+    Serial.print("Running at SAMPLE_RATE: ");
+    Serial.println(SAMPLE_RATE);
+    // --> No magic numbers
     fft.setHighPassCutoff(22000.f);
-
-    sine.frequency(200 * (AUDIO_SAMPLE_RATE_EXACT / sampleRate));
+    // --> No magic numbers
+    sine.frequency(200 * (AUDIO_SAMPLE_RATE_EXACT / SAMPLE_RATE));
 
     Serial.println("Done initializing! Starting now!");
 }
 
 
 void loop() {
+    // --> No magic numbers
     if(performanceStatsClock > 500) {
         printPerformanceData();
         performanceStatsClock = 0;
@@ -108,7 +121,7 @@ void loop() {
         if ( incomingByte == 'r' ) {
             if (!wavWriter.isWriting()) {
                 Serial.println("Recording started!");
-                wavWriter.open("Ultra.wav", sampleRate, 1);
+                wavWriter.open("Ultra.wav", SAMPLE_RATE, 1);
             }
             else {
                 Serial.println("Recording stopped!");

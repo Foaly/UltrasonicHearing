@@ -27,6 +27,7 @@
 namespace {
 
     // Teensy Audio Shield Rev D (Teensy 4.x)
+    // --> BIG_LETTERS
     const uint8_t SDcard_CS_Pin    = 10;
     const uint8_t SDcard_MOSI_Pin  = 11;
     const uint8_t SDcard_SCK_Pin   = 13;
