@@ -24,7 +24,6 @@
 #define WAVFILEWRITER_INCLUDE
 
 #include <SD.h>
-#include <SD_t3.h>
 #include <record_queue.h>
 
 class WavFileWriter
