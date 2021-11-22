@@ -29,6 +29,10 @@
 #include <arm_math.h>
 #include <cstring>
 
+#ifdef UNIT_TEST
+    #include <functional>
+#endif
+
 class PitchShift : public AudioStream
 {
 public:
@@ -42,6 +46,9 @@ public:
     void setHighPassCutoff(float cutoff);
 
 #ifdef UNIT_TEST
+    // set an outside funtion that simulates the audio engine's input
+    void setInputGenerator(std::function<int(void)> inputGenerator){ m_inputGenerator = inputGenerator; }
+
     // mock audio engine calls during unit tests
     audio_block_t* allocate();
 	audio_block_t* receiveReadOnly();
@@ -87,6 +94,11 @@ private:
 #elif defined(__IMXRT1062__)  // Teensy 4.x
     arm_rfft_fast_instance_f32 m_fftInst;
 #endif
+
+#ifdef UNIT_TEST
+    std::function<int(void)> m_inputGenerator = [](){ return 0; };
+#endif
+
 };
 
 #endif // PITCHSHIFT_HPP

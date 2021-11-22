@@ -26,12 +26,19 @@
 
 
 const int sampleRate = 192000;
-const int16_t semitones = -36;  // shift in semitones
+const int16_t semitones = 0;  // shift in semitones
 uint16_t failedTestCount = 0;
+
+
+// this function generates the simulated input to the audio engine
+int inputGenerator() {
+    return 23;
+}
 
 
 void test_pitchShifter(void) {
     PitchShift pitchShifter(sampleRate, semitones);
+    pitchShifter.setInputGenerator(&inputGenerator);
 
     pitchShifter.update();
     pitchShifter.update();

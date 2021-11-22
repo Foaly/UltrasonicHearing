@@ -97,15 +97,20 @@ void PitchShift::setHighPassCutoff(float cutoff)
 #ifdef UNIT_TEST
     audio_block_t* PitchShift::allocate()
     {
-        audio_block_t* block;
-        block = new audio_block_t;
+        audio_block_t* block = new audio_block_t;
         std::memset(block->data, 0, sizeof block->data);
         return block;
     }
 
 	audio_block_t* PitchShift::receiveReadOnly()
     {
-        return allocate();
+        audio_block_t* block = allocate();
+        for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++)
+        {
+            block->data[i] = m_inputGenerator();
+        }
+
+        return block;
     }
 
 	void PitchShift::transmit(audio_block_t *block, unsigned char)
