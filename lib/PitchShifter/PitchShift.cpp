@@ -191,20 +191,21 @@ void PitchShift::update(void)
         float32_t magnitude = 2.0f * std::sqrt(real * real + imag * imag);
         float32_t phase = std::atan2(imag, real);
 
-        // compute phase difference
+        // compute phase difference (derivative)
         float32_t temp = phase - m_previousPhases[i];
         m_previousPhases[i] = phase;
 
-        // subtract the expected phase difference
+        // subtract the expected phase increment (to get the phase offset of the bin)
         temp -= static_cast<float32_t>(i) * m_omega;
 
-        // map phase into the range ]-pi, pi]
+        // wrap phase into the range ]-pi, pi]
         temp = wrap_phase(temp);
 
         // get deviation from bin frequency from the +/- Pi interval
+        // (this takes out the influence of the overlap on the bins phase)
         temp = OVERSAMPLING_FACTOR * temp / (2. * M_PI);
 
-        // compute the k-th partials' true frequency
+        // compute the i-th partials' true frequency
         temp = static_cast<float32_t>(i) * m_binFrequencyWidth + temp * m_binFrequencyWidth;
 
         // save magnitude and true frequency
