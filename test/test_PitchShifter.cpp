@@ -24,15 +24,25 @@
 
 #include <PitchShift.hpp>
 
+#include <cmath>
+
 
 const int sampleRate = 192000;
 const int16_t semitones = 0;  // shift in semitones
 uint16_t failedTestCount = 0;
 
+const float amplitude = 32767 * 0.8f;
+const float frequency = 444.f;
+const float phase = 0.f;
+const float deltaTime = 1.f / sampleRate;
+float time = 0.f;
 
 // this function generates the simulated input to the audio engine
 int inputGenerator() {
-    return 23;
+    // simple sine wave
+    float value = amplitude * std::sin(2.f * M_PI * frequency * time + phase);
+    time += deltaTime;
+    return static_cast<int>(value);
 }
 
 
@@ -40,6 +50,7 @@ void test_pitchShifter(void) {
     PitchShift pitchShifter(sampleRate, semitones);
     pitchShifter.setInputGenerator(&inputGenerator);
 
+    pitchShifter.update();
     pitchShifter.update();
     pitchShifter.update();
     pitchShifter.update();
