@@ -36,7 +36,6 @@ namespace {
 PitchShift::PitchShift(uint32_t sampleRate, float32_t pitchShiftFactor) :
     AudioStream(1, inputQueueArray),
     m_binFrequencyWidth{static_cast<float32_t>(sampleRate) / FRAME_SIZE},
-    m_pitchShiftFactor(pitchShiftFactor),
     m_highPassCutoff(0.f),
     m_offset{0}
 {
@@ -60,6 +59,14 @@ PitchShift::PitchShift(uint32_t sampleRate, float32_t pitchShiftFactor) :
     else if (status == ARM_MATH_ARGUMENT_ERROR)
         Serial.println("FFT size not supported");
 #endif
+    // set pitch shift factor
+    if (pitchShiftFactor < 0.f)
+    {
+        Serial.println("Pitch shift factor has to be bigger than 0.");
+        pitchShiftFactor = 1.f;
+    }
+    m_pitchShiftFactor = pitchShiftFactor;
+
     // generate window
     generateWindow();
 

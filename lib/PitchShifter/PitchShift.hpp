@@ -68,7 +68,7 @@ private:
 
     const float32_t m_omega = 2.0 * M_PI * static_cast<float32_t>(HOP_SIZE) / FRAME_SIZE;  // omega is the nominal (expected) phase increment for each FFT bin at the given analysis hop size
     const float32_t m_binFrequencyWidth;
-    const float32_t m_pitchShiftFactor;
+    float32_t m_pitchShiftFactor;
     float32_t m_highPassCutoff;
 
     uint16_t m_offset;
