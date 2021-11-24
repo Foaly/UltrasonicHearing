@@ -249,11 +249,12 @@ void PitchShift::update(void)
         // add the overlap phase advance back in
         temp += static_cast<float32_t>(i) * m_omega;
 
-        // accumulate delta phase to get bin phase
-        m_phaseSum[i] += temp;
-        temp = m_phaseSum[i];
+        // accumulate delta phase to get the bin phase
+        // warp phase to avoid float precision issues
+        m_phaseSum[i] = wrap_phase(m_phaseSum[i] + temp);
 
         // compute new real and imaginary part and re-interleave
+        temp = m_phaseSum[i];
         m_floatComplexBuffer[i * 2] = magnitude * arm_cos_f32(temp);
         m_floatComplexBuffer[i * 2 + 1] = magnitude * arm_sin_f32(temp);
     }
