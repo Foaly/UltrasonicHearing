@@ -33,7 +33,8 @@ namespace {
 }
 
 
-PitchShift::PitchShift(uint32_t sampleRate, float32_t pitchShiftFactor) :
+template <uint16_t FRAME_SIZE>
+PitchShift<FRAME_SIZE>::PitchShift(uint32_t sampleRate, float32_t pitchShiftFactor) :
     AudioStream(1, inputQueueArray),
     m_binFrequencyWidth{static_cast<float32_t>(sampleRate) / FRAME_SIZE},
     m_highPassCutoff(0.f),
@@ -83,7 +84,8 @@ PitchShift::PitchShift(uint32_t sampleRate, float32_t pitchShiftFactor) :
 }
 
 
-void PitchShift::generateWindow()
+template <uint16_t FRAME_SIZE>
+void PitchShift<FRAME_SIZE>::generateWindow()
 {
     // generate a Hann window with 0 on both ends
     for(int i = 0; i < FRAME_SIZE; i++)
@@ -93,7 +95,8 @@ void PitchShift::generateWindow()
 }
 
 
-void PitchShift::setHighPassCutoff(float cutoff)
+template <uint16_t FRAME_SIZE>
+void PitchShift<FRAME_SIZE>::setHighPassCutoff(float cutoff)
 {
     if (cutoff < 0.f)
         cutoff = 0.f;
@@ -102,25 +105,29 @@ void PitchShift::setHighPassCutoff(float cutoff)
 
 
 #ifdef UNIT_TEST
-    audio_block_t* PitchShift::allocate()
+    template <uint16_t FRAME_SIZE>
+    audio_block_t* PitchShift<FRAME_SIZE>::allocate()
     {
         audio_block_t* block = new audio_block_t;
         std::memset(block->data, 0, sizeof block->data);
         return block;
     }
 
-	audio_block_t* PitchShift::receiveReadOnly()
+	template <uint16_t FRAME_SIZE>
+    audio_block_t* PitchShift<FRAME_SIZE>::receiveReadOnly()
     {
         audio_block_t* block = allocate();
         for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++)
         {
             block->data[i] = m_inputGenerator();
+            Serial.print(block->data[i]);
         }
 
         return block;
     }
 
-	void PitchShift::transmit(audio_block_t *block, unsigned char)
+    template <uint16_t FRAME_SIZE>
+    void PitchShift<FRAME_SIZE>::transmit(audio_block_t *block, unsigned char)
     {
         Serial.print("outputBlock = [");
         for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++)
@@ -131,14 +138,16 @@ void PitchShift::setHighPassCutoff(float cutoff)
         Serial.println("]");
     }
 
-    void PitchShift::release(audio_block_t * block)
+    template <uint16_t FRAME_SIZE>
+    void PitchShift<FRAME_SIZE>::release(audio_block_t * block)
     {
         delete block;
     }
 #endif
 
 
-void PitchShift::update(void)
+template <uint16_t FRAME_SIZE>
+void PitchShift<FRAME_SIZE>::update(void)
 {
     // get input block
     audio_block_t* input_block;

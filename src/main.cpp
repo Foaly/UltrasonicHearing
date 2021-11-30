@@ -47,7 +47,7 @@ elapsedMillis performanceStatsClock;
 
 AudioControlSGTL5000     audioShield;
 AudioInputI2S            audioInput;
-PitchShift               fft(sampleRate, pitchShiftFactor);
+PitchShift<1024>         fft(sampleRate, pitchShiftFactor);
 Counter                  counter;
 Printer                  printer;
 AudioOutputI2S           audioOutput;

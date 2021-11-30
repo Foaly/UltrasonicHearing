@@ -33,6 +33,7 @@
     #include <functional>
 #endif
 
+template <uint16_t FRAME_SIZE = 1024>
 class PitchShift : public AudioStream
 {
 public:
@@ -59,8 +60,17 @@ public:
 private:
     void generateWindow();
 
+    // FFT size is specified by the template parameter FRAME_SIZE.
+    // Only allow valid FFT sizes supported by the platform.
+    // Teensy 3.x supports only 128, 512, 2048, but Teensy 4.x supports 32, 64, 128, 256, 512, 1024, 2048, 4096
+    // FFT size that result in a HOP_SIZE smaller than 128 are also omitted, because they lead to too little samples per update() call
+#if defined(KINETISK)  // Teensy 3.x
+    static_assert(FRAME_SIZE == 512 || FRAME_SIZE == 2048, "PitchShifter only supports FRAME_SIZE of 512 or 2048 on Teensy 3.x.");
+#elif defined(__IMXRT1062__)  // Teensy 4.x
+    static_assert(FRAME_SIZE == 512 || FRAME_SIZE == 1024 || FRAME_SIZE == 2048 || FRAME_SIZE == 4096, "PitchShifter only supports FRAME_SIZE of 512, 1024, 2048 or 4096 on Teensy 4.x.");
+#endif
+
     audio_block_t* inputQueueArray[1];
-    static const uint16_t FRAME_SIZE = 1024; // FFT length, Teensy 3.x supports only 128, 512, 2048, but Teensy 4.x supports 32, 64, 128, 256, 512, 1024, 2048, 4096
     static const uint16_t OVERSAMPLING_FACTOR = 4; // has to be power of 2
     static const uint16_t HOP_SIZE = FRAME_SIZE / OVERSAMPLING_FACTOR;
     static const uint16_t FRAME_OVERLAP = FRAME_SIZE - HOP_SIZE;
@@ -100,5 +110,8 @@ private:
 #endif
 
 };
+
+// include template implementation
+#include "PitchShift_impl.hpp"
 
 #endif // PITCHSHIFT_HPP
