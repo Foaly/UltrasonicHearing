@@ -47,7 +47,7 @@ int inputGenerator() {
 
 
 void test_pitchShifter(void) {
-    PitchShift pitchShifter(sampleRate, semitones);
+    PitchShift<1024> pitchShifter(sampleRate, semitones);
     pitchShifter.setInputGenerator(&inputGenerator);
 
     pitchShifter.update();
@@ -61,8 +61,7 @@ void test_pitchShifter(void) {
 
 
 void setup() {
-    // NOTE!!! Wait for >2 secs
-    // if board doesn't support software reset via Serial.DTR/RTS
+    // Wait for >2 secs if board doesn't support software reset via Serial.DTR/RTS
     delay(2000);
 
     UNITY_BEGIN();
