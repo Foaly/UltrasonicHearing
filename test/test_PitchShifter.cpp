@@ -26,12 +26,14 @@
 
 #include <cmath>
 
-
-const int sampleRate = 192000;
-const int16_t semitones = 0;  // shift in semitones
 uint16_t failedTestCount = 0;
 
-const float amplitude = 32767 * 0.8f;
+const int sampleRate = 44100;
+const uint16_t frameSize = 1024;  // has to be power of 2
+const int16_t semitones = 0;  // shift in semitones
+const float32_t pitchShiftFactor = std::pow(2., semitones / 12.);
+
+const float amplitude = 32767 * 0.5f;
 const float frequency = 444.f;
 const float phase = 0.f;
 const float deltaTime = 1.f / sampleRate;
@@ -47,14 +49,13 @@ int inputGenerator() {
 
 
 void test_pitchShifter(void) {
-    PitchShift<1024> pitchShifter(sampleRate, semitones);
+    PitchShift<frameSize> pitchShifter(sampleRate, pitchShiftFactor);
     pitchShifter.setInputGenerator(&inputGenerator);
 
-    pitchShifter.update();
-    pitchShifter.update();
-    pitchShifter.update();
-    pitchShifter.update();
-    pitchShifter.update();
+    const uint16_t frameCount = 3 * frameSize / AUDIO_BLOCK_SAMPLES;
+
+    for(uint16_t i = 0; i < frameCount; i++)
+        pitchShifter.update();
 
     TEST_ASSERT_EQUAL(42, 42);
 }

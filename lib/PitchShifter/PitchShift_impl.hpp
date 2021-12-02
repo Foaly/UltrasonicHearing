@@ -116,12 +116,15 @@ void PitchShift<FRAME_SIZE>::setHighPassCutoff(float cutoff)
 	template <uint16_t FRAME_SIZE>
     audio_block_t* PitchShift<FRAME_SIZE>::receiveReadOnly()
     {
+        Serial.print("inputBlock = [");
         audio_block_t* block = allocate();
         for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++)
         {
             block->data[i] = m_inputGenerator();
             Serial.print(block->data[i]);
+            Serial.print(", ");
         }
+        Serial.println("]");
 
         return block;
     }
