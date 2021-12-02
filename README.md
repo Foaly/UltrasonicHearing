@@ -19,6 +19,17 @@ All code is licensed under the GNU General Public License (GPL) version 3.0.
 For more information refer the file `LICENSE.txt`.
 
 
+Execution
+---------
+
+To upload the software to the Teensy it has to be connected to the computer through a standard USB cable.
+Afterwards the following commands have to be executed:
+
+For Teensy 4.1 run: `pio run --target upload -e teensy41`
+
+For Teensy 3.6 run: `pio run --target upload -e teensy36`
+
+
 Tests
 -----
 
@@ -29,4 +40,3 @@ With the Teensy connected run the following command in the PlatformIO terminal:
 For Teensy 4.1 run: `pio test -e teensy41`
 
 For Teensy 3.6 run: `pio test -e teensy36`
-
