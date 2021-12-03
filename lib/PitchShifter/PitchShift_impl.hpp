@@ -61,9 +61,9 @@ PitchShift<FRAME_SIZE>::PitchShift(uint32_t sampleRate, float32_t pitchShiftFact
         Serial.println("FFT size not supported");
 #endif
     // set pitch shift factor
-    if (pitchShiftFactor < 0.f)
+    if (pitchShiftFactor <= 0.f)
     {
-        Serial.println("Pitch shift factor has to be bigger than 0.");
+        Serial.println("Pitch shift factor has to be bigger than 0. Overwritting it to 1.");
         pitchShiftFactor = 1.f;
     }
     m_pitchShiftFactor = pitchShiftFactor;
