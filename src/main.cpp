@@ -34,12 +34,12 @@
 
 
 const int micInput = AUDIO_INPUT_MIC;
-//const int sampleRate = 44100;
+const int sampleRate = 44100;
 //const int sampleRate = 96000;
-const int sampleRate = 192000;
+//const int sampleRate = 192000;
 //const int sampleRate = 234000;
 
-const int16_t semitones = -36;  // shift in semitones
+const int16_t semitones = 0;  // shift in semitones
 const float32_t pitchShiftFactor = std::pow(2., semitones / 12.);
 
 elapsedMillis performanceStatsClock;
@@ -61,8 +61,8 @@ WavFileWriter            wavWriter(queue);
 //AudioConnection    patchCord(counter, 0, fft, 0);
 //AudioConnection    patchCord1(fft, 0, printer, 0);
 
-//AudioConnection      sineToFFT(sine, 0, fft, 0);
-AudioConnection      micToFFT(audioInput, 0, fft, 0);
+AudioConnection      sineToFFT(sine, 0, fft, 0);
+//AudioConnection      micToFFT(audioInput, 0, fft, 0);
 AudioConnection      fftToOut(fft, 0, audioOutput, 0);
 AudioConnection      fftToOut2(fft, 0, audioOutput, 1);
 //AudioConnection      micToWAV(audioInput, 0, queue, 0);
@@ -87,9 +87,10 @@ void setup() {
     Serial.print("Running at samplerate: ");
     Serial.println(sampleRate);
 
-    fft.setHighPassCutoff(22000.f);
+    //fft.setHighPassCutoff(22000.f);
 
     sine.frequency(200 * (AUDIO_SAMPLE_RATE_EXACT / sampleRate));
+    sine.amplitude(0.2);
 
     Serial.println("Done initializing! Starting now!");
 }
