@@ -52,7 +52,7 @@ public:
 
     // mock audio engine calls during unit tests
     audio_block_t* allocate();
-	audio_block_t* receiveReadOnly();
+    audio_block_t* receiveReadOnly();
     void transmit(audio_block_t* block, unsigned char index = 0);
     void release(audio_block_t* block);
 #endif

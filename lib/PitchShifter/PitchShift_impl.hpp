@@ -242,7 +242,7 @@ void PitchShift<FRAME_SIZE>::update(void)
     // apply a high pass filter by zeroing lower FFT bins
     const uint16_t startIndex = std::round(m_highPassCutoff / m_binFrequencyWidth);
     for (int i = startIndex; i < HALF_FRAME_SIZE; i++) {
-        // do the actual pitchshifting
+        // do the actual pitch shifting
         uint16_t index = i * m_pitchShiftFactor;
         if (index <= HALF_FRAME_SIZE) {
             m_synthesisMagnitudes[index] += m_magnitudes[i];
@@ -273,9 +273,8 @@ void PitchShift<FRAME_SIZE>::update(void)
         m_phaseSum[i] = wrap_phase(m_phaseSum[i] + temp);
 
         // compute new real and imaginary part and re-interleave
-        temp = m_phaseSum[i];
-        m_floatComplexBuffer[i * 2] = magnitude * arm_cos_f32(temp);
-        m_floatComplexBuffer[i * 2 + 1] = magnitude * arm_sin_f32(temp);
+        m_floatComplexBuffer[i * 2] = magnitude * arm_cos_f32(m_phaseSum[i]);
+        m_floatComplexBuffer[i * 2 + 1] = magnitude * arm_sin_f32(m_phaseSum[i]);
     }
 
     // zero negative frequencies
