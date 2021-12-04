@@ -20,7 +20,10 @@ max_value = 32767
 plt.axhline(y=max_value, xmin=0, xmax=len(outputBlock), color='red', zorder=2, linewidth=0.5)
 plt.axhline(y=-max_value, xmin=0, xmax=len(outputBlock), color='red', zorder=2, linewidth=0.5)
 plt.axhline(y=0, xmin=0, xmax=len(outputBlock), color='black', zorder=2, linewidth=0.5)
-for x in range(5):
-    plt.axvline(x=1024 * x, ymin=-max_value, ymax=max_value, color='green', zorder=2, linewidth=0.5)
+periods = 2
+for x in range(periods + 1):
+    plt.axvline(x=1024 * x, ymin=-max_value, ymax=max_value, color='green', zorder=3, linewidth=0.5)
+for x in range(8 * periods):
+    plt.axvline(x=128 * x, ymin=-max_value, ymax=max_value, color='blue', zorder=2, linewidth=0.5)
 
 plt.show()
