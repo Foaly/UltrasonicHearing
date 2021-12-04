@@ -198,7 +198,9 @@ void PitchShift<FRAME_SIZE>::update(void)
     // do the FFT
     // the FFT output is complex and in the following format
     // {real(0), imag(0), real(1), imag(1), ...}
+    // real[0] and imag[0] are both real valued. They are ignored throughout the processing, which is why the loop counters start at 1
     // real[0] represents the DC offset, and imag[0] should be 0
+    // all other value are complex
 #if defined(KINETISK)
     arm_rfft_f32(&m_fftInst, m_floatInBuffer, m_floatComplexBuffer);
 #elif defined(__IMXRT1062__)
@@ -206,7 +208,7 @@ void PitchShift<FRAME_SIZE>::update(void)
 #endif
 
     // analyse the lower half of the signal (upper half is the same just mirrored)
-    for (int i = 0; i < HALF_FRAME_SIZE; i++) {
+    for (int i = 1; i < HALF_FRAME_SIZE; i++) {
         // deinterlace the FFT result
         float32_t real = m_floatComplexBuffer[i * 2];
         float32_t imag = m_floatComplexBuffer[i * 2 + 1];
@@ -239,8 +241,9 @@ void PitchShift<FRAME_SIZE>::update(void)
 
     std::memset(m_synthesisMagnitudes, 0, sizeof m_synthesisMagnitudes);
     std::memset(m_synthesisFrequencies, 0, sizeof m_synthesisFrequencies);
-    // apply a high pass filter by zeroing lower FFT bins
-    const uint16_t startIndex = std::round(m_highPassCutoff / m_binFrequencyWidth);
+    // apply a high pass filter by skipping lower FFT bins
+    const uint16_t highpassIndex = std::round(m_highPassCutoff / m_binFrequencyWidth) + 1;
+    const uint16_t startIndex = std::min(highpassIndex, HALF_FRAME_SIZE);
     for (int i = startIndex; i < HALF_FRAME_SIZE; i++) {
         // do the actual pitch shifting
         uint16_t index = i * m_pitchShiftFactor;
@@ -251,7 +254,7 @@ void PitchShift<FRAME_SIZE>::update(void)
     }
 
     // synthesize the signal
-    for (int i = 0; i < HALF_FRAME_SIZE; i++) {
+    for (int i = 1; i < HALF_FRAME_SIZE; i++) {
         // get new magnitude and true frequency from the synthesis array
         float32_t magnitude = m_synthesisMagnitudes[i];
         float32_t temp = m_synthesisFrequencies[i];
