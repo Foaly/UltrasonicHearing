@@ -77,6 +77,7 @@ private:
     static const uint16_t HALF_FRAME_SIZE = FRAME_SIZE / 2;
 
     const float32_t m_omega = 2.0 * M_PI * static_cast<float32_t>(HOP_SIZE) / FRAME_SIZE;  // omega is the nominal (expected) phase increment for each FFT bin at the given analysis hop size
+    const uint32_t m_halfSampleRate;
     const float32_t m_binFrequencyWidth;
     float32_t m_pitchShiftFactor;
     float32_t m_highPassCutoff;

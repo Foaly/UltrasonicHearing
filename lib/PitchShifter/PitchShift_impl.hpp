@@ -36,6 +36,7 @@ namespace {
 template <uint16_t FRAME_SIZE>
 PitchShift<FRAME_SIZE>::PitchShift(uint32_t sampleRate, float32_t pitchShiftFactor) :
     AudioStream(1, inputQueueArray),
+    m_halfSampleRate{static_cast<uint32_t>(std::round(sampleRate / 2.f))},
     m_binFrequencyWidth{static_cast<float32_t>(sampleRate) / FRAME_SIZE},
     m_highPassCutoff(0.f),
     m_offset{0}
@@ -99,7 +100,17 @@ template <uint16_t FRAME_SIZE>
 void PitchShift<FRAME_SIZE>::setHighPassCutoff(float cutoff)
 {
     if (cutoff < 0.f)
+    {
+        Serial.println("PitchShift highpass cutoff can not be smaller than 0. Overwritting it to 0.");
         cutoff = 0.f;
+    }
+    else if (cutoff > m_halfSampleRate)
+    {
+        Serial.print("PitchShift highpass cutoff can not be bigger than Fs/2. Overwritting it to ");
+        Serial.print(m_halfSampleRate);
+        Serial.println(".");
+        cutoff = m_halfSampleRate;
+    }
     m_highPassCutoff = cutoff;
 }
 
