@@ -23,6 +23,7 @@
 #include <PitchShift.hpp>
 
 #include <cmath>
+#include <algorithm>
 
 
 namespace {
