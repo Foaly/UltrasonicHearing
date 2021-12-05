@@ -77,7 +77,7 @@ void setup() {
     delay(1000);
 
     Serial.begin(9600);
-    AudioMemory(200);
+    AudioMemory(500);
     audioShield.enable();
     audioShield.inputSelect(micInput);
     audioShield.micGain(45);  //0-63
