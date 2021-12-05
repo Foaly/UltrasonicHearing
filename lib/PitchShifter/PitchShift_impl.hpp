@@ -44,22 +44,16 @@ PitchShift<FRAME_SIZE>::PitchShift(uint32_t sampleRate, float32_t pitchShiftFact
     // initialize FFT
 #if defined(KINETISK)
     arm_status status = arm_rfft_init_f32(&m_fftInst, &m_fftComplexInst, FRAME_SIZE, 0, 1);
-    if (status == ARM_MATH_SUCCESS)
-        Serial.println("FFT initilized!");
-    else if (status == ARM_MATH_ARGUMENT_ERROR)
-        Serial.println("FFT size not supported");
+    if (status == ARM_MATH_ARGUMENT_ERROR)
+        Serial.println("FFT failed to initilize! FFT size not supported.");
 
     status = arm_rfft_init_f32(&m_ifftInst, &m_ifftComplexInst, FRAME_SIZE, 1, 1);
-    if (status == ARM_MATH_SUCCESS)
-        Serial.println("iFFT initilized!");
-    else if (status == ARM_MATH_ARGUMENT_ERROR)
-        Serial.println("iFFT size not supported");
+    if (status == ARM_MATH_ARGUMENT_ERROR)
+        Serial.println("iFFT failed to initilize! iFFT size not supported.");
 #elif defined(__IMXRT1062__)
     arm_status status = arm_rfft_fast_init_f32(&m_fftInst, FRAME_SIZE);
-    if (status == ARM_MATH_SUCCESS)
-        Serial.println("FFT initilized!");
-    else if (status == ARM_MATH_ARGUMENT_ERROR)
-        Serial.println("FFT size not supported");
+    if (status == ARM_MATH_ARGUMENT_ERROR)
+        Serial.println("FFT failed to initilize! FFT size not supported.");
 #endif
     // set pitch shift factor
     if (pitchShiftFactor <= 0.f)
