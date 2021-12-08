@@ -72,9 +72,10 @@ private:
 
     audio_block_t* inputQueueArray[1];
     static const uint16_t OVERSAMPLING_FACTOR = 4; // has to be power of 2
-    static const uint16_t HOP_SIZE = FRAME_SIZE / OVERSAMPLING_FACTOR;
+    static const uint16_t HOP_SIZE = FRAME_SIZE / OVERSAMPLING_FACTOR; // has to be bigger than 128 (important in case OVERSAMPING_FACTOR becomes configurable)
     static const uint16_t FRAME_OVERLAP = FRAME_SIZE - HOP_SIZE;
     static const uint16_t HALF_FRAME_SIZE = FRAME_SIZE / 2;
+    static constexpr float32_t AMPLITUDE_CORRECTION_FACTOR = (OVERSAMPLING_FACTOR < 4) ? 1.f : (8.f / 3.f / OVERSAMPLING_FACTOR); // only verified for Hann windows
 
     const float32_t m_omega = 2.0 * M_PI * static_cast<float32_t>(HOP_SIZE) / FRAME_SIZE;  // omega is the nominal (expected) phase increment for each FFT bin at the given analysis hop size
     const uint32_t m_halfSampleRate;

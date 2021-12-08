@@ -220,7 +220,7 @@ void PitchShift<FRAME_SIZE>::update(void)
         float32_t imag = m_floatComplexBuffer[i * 2 + 1];
 
         // compute phase and magnitude
-        float32_t magnitude = 2.0f * std::sqrt(real * real + imag * imag);
+        float32_t magnitude = std::sqrt(real * real + imag * imag);
         float32_t phase = std::atan2(imag, real);
 
         // compute phase difference (derivative)
@@ -298,6 +298,9 @@ void PitchShift<FRAME_SIZE>::update(void)
 
     // apply window function again (because we synthesized the signal from scratch)
     arm_mult_f32(m_floatOutBuffer, m_window, m_floatOutBuffer, FRAME_SIZE);
+
+    // this factor corrects the amplitude change introduced by overlapping window functions
+    arm_scale_f32(m_floatOutBuffer, AMPLITUDE_CORRECTION_FACTOR, m_floatOutBuffer, FRAME_SIZE);
 
     // convert floats back to int
     arm_float_to_q15(m_floatOutBuffer, m_outputBuffer, FRAME_SIZE);

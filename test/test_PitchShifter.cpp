@@ -41,7 +41,7 @@ const float deltaTime = 1.f / sampleRate;
 float time = 0.f;
 
 // this function generates the simulated input to the audio engine
-int inputGenerator() {
+int sineGenerator() {
     // simple sine wave
     float value = amplitude * std::sin(2.f * M_PI * frequency * time + phase);
     time += deltaTime;
@@ -51,7 +51,7 @@ int inputGenerator() {
 
 void test_pitchShifter(void) {
     PitchShift<frameSize> pitchShifter(sampleRate, pitchShiftFactor);
-    pitchShifter.setInputGenerator(&inputGenerator);
+    pitchShifter.setInputGenerator(&sineGenerator);
 
     const uint16_t frameCount = 4 * frameSize / AUDIO_BLOCK_SAMPLES;
 
