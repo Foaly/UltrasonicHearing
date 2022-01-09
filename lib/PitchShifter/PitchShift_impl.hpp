@@ -220,7 +220,7 @@ void PitchShift<FRAME_SIZE>::update(void)
         float32_t imag = m_floatComplexBuffer[i * 2 + 1];
 
         // compute phase and magnitude
-        float32_t magnitude = std::sqrt(real * real + imag * imag);
+        float32_t magnitude = std::sqrt(real * real + imag * imag);  // Note to future optimizers: std::sqrt is faster than arm_sqrt_f32, I measured... (possibly because it uses sqrt hardware instructions better ¯\_(ツ)_/¯)
         float32_t phase = std::atan2(imag, real);
 
         // compute phase difference (derivative)
@@ -271,7 +271,7 @@ void PitchShift<FRAME_SIZE>::update(void)
         // get bin deviation from freq deviation
         temp /= m_binFrequencyWidth;
 
-        // take oversamping into account
+        // take oversampling into account
         temp = 2.0 * M_PI * temp / OVERSAMPLING_FACTOR;
 
         // add the overlap phase advance back in
@@ -282,6 +282,7 @@ void PitchShift<FRAME_SIZE>::update(void)
         m_phaseSum[i] = wrap_phase(m_phaseSum[i] + temp);
 
         // compute new real and imaginary part and re-interleave
+        // Note: the arm sine & cosine functions use lookup tables and are faster than their std counterpart at the expense of precision (which is sufficient in this case)
         m_floatComplexBuffer[i * 2] = magnitude * arm_cos_f32(m_phaseSum[i]);
         m_floatComplexBuffer[i * 2 + 1] = magnitude * arm_sin_f32(m_phaseSum[i]);
     }
