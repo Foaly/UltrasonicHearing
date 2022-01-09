@@ -4,4 +4,4 @@ bin/
 lib/
 
 pyvenv.cfg
-test_input.txt
+*.txt
