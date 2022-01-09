@@ -44,6 +44,39 @@ namespace {
         static const float pi = 3.14159265f;
         return modulo(phase + pi, -2.f * pi) + pi;
     }
+
+
+    // Approximation of the atan2 function loosely based on the book “Approximations for Digital Computers” by Cecil Hastings Jr. from 1955
+    // |max_error| < 0.005
+    float atan2_approximation(float y, float x)
+    {
+        static const float pi = 3.14159265f;
+        static const float halfPi = 1.5707963f;
+
+        if (x == 0.0f) {
+            if (y > 0.0f)
+                return halfPi;
+            if (y < 0.0f)
+                return -halfPi;
+            return 0.0f;
+        }
+
+        float atan;
+        float z = y / x;
+        if (std::fabs(z) < 1.0f) {
+            atan = z / (1.0f + 0.28f * z * z);
+            if (x < 0.0f) {
+                if (y < 0.0f)
+                    return atan - pi;
+                return atan + pi;
+            }
+        }
+        else {
+            atan = halfPi - z / (z * z + 0.28f);
+            if (y < 0.0f)
+                return atan - pi;
+        }
+        return atan;
     }
 }
 
@@ -235,7 +268,7 @@ void PitchShift<FRAME_SIZE>::update(void)
 
         // compute phase and magnitude
         float32_t magnitude = std::sqrt(real * real + imag * imag);  // Note to future optimizers: std::sqrt is faster than arm_sqrt_f32, I measured... (possibly because it uses sqrt hardware instructions better ¯\_(ツ)_/¯)
-        float32_t phase = std::atan2(imag, real);
+        float32_t phase = atan2_approximation(imag, real);
 
         // compute phase difference (derivative)
         float32_t temp = phase - m_previousPhases[i];
