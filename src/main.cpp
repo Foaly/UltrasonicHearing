@@ -34,12 +34,12 @@
 
 
 const int micInput = AUDIO_INPUT_MIC;
-const int sampleRate = 44100;
+//const int sampleRate = 44100;
 //const int sampleRate = 96000;
-//const int sampleRate = 192000;
+const int sampleRate = 192000;
 //const int sampleRate = 234000;
 
-const int16_t semitones = 0;  // shift in semitones
+const int16_t semitones = -12 * 1;  // shift in semitones
 const float32_t pitchShiftFactor = std::pow(2., semitones / 12.);
 
 elapsedMillis performanceStatsClock;
@@ -47,11 +47,12 @@ elapsedMillis performanceStatsClock;
 
 AudioControlSGTL5000     audioShield;
 AudioInputI2S            audioInput;
-PitchShift<1024>         fft(sampleRate, pitchShiftFactor);
+PitchShift<2048>         fft(sampleRate, pitchShiftFactor);
 Counter                  counter;
 Printer                  printer;
 AudioOutputI2S           audioOutput;
 AudioSynthWaveformSine   sine;
+AudioSynthNoiseWhite     noise;
 AudioRecordQueue         queue;
 WavFileWriter            wavWriter(queue);
 
@@ -61,8 +62,9 @@ WavFileWriter            wavWriter(queue);
 //AudioConnection    patchCord(counter, 0, fft, 0);
 //AudioConnection    patchCord1(fft, 0, printer, 0);
 
-AudioConnection      sineToFFT(sine, 0, fft, 0);
-//AudioConnection      micToFFT(audioInput, 0, fft, 0);
+//AudioConnection      sineToFFT(sine, 0, fft, 0);
+//AudioConnection      noiseToFFT(noise, 0, fft, 0);
+AudioConnection      micToFFT(audioInput, 0, fft, 0);
 AudioConnection      fftToOut(fft, 0, audioOutput, 0);
 AudioConnection      fftToOut2(fft, 0, audioOutput, 1);
 //AudioConnection      micToWAV(audioInput, 0, queue, 0);
@@ -74,14 +76,15 @@ void printPerformanceData();
 
 
 void setup() {
+    //wavWriter.open("start.wav", sampleRate, 1);
     delay(1000);
 
     Serial.begin(9600);
     AudioMemory(500);
     audioShield.enable();
     audioShield.inputSelect(micInput);
-    audioShield.micGain(45);  //0-63
-    audioShield.volume(0.6);  //0-1
+    audioShield.micGain(40);  //0-63
+    audioShield.volume(0.8);  //0-1
 
     setI2SFreq(sampleRate);
     Serial.print("Running at samplerate: ");
@@ -89,8 +92,9 @@ void setup() {
 
     //fft.setHighPassCutoff(22000.f);
 
-    sine.frequency(200 * (AUDIO_SAMPLE_RATE_EXACT / sampleRate));
-    sine.amplitude(0.2);
+    sine.frequency(440.f * (AUDIO_SAMPLE_RATE_EXACT / sampleRate));
+    sine.amplitude(0.2f);
+    noise.amplitude(0.2f);
 
     Serial.println("Done initializing! Starting now!");
 }
