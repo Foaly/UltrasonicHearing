@@ -27,9 +27,23 @@
 
 
 namespace {
+    // Returns the remainder of the division x / y
+    // NOTE: we can't simply use std::fmod instead, because due to "conventions"
+    // for std::fmod, the sign of the result is the sign of the dividend (x),
+    // while for modulo the sign of the result is the sign of the divisor (y)...
+    float modulo(float x, float y)
+    {
+        return x - y * std::floor(x / y);
+    }
+
+
     // Wrap an arbitrary phase in radians into the range ]-pi, pi]
-    double wrap_phase(float32_t phase){
-        return std::fmod(phase + M_PI, -2.0 * M_PI) + M_PI;
+    // Also known as principle argument function
+    float wrap_phase(float phase)
+    {
+        static const float pi = 3.14159265f;
+        return modulo(phase + pi, -2.f * pi) + pi;
+    }
     }
 }
 
