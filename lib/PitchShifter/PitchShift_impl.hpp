@@ -88,6 +88,7 @@ PitchShift<FRAME_SIZE>::PitchShift(uint32_t sampleRate, float32_t pitchShiftFact
     m_binFrequencyWidth{static_cast<float32_t>(sampleRate) / FRAME_SIZE},
     m_highPassCutoff{0.f},
     m_startIndex{1},
+    m_audibleRangeEndIndex{static_cast<uint16_t>(std::round(22000.f / m_binFrequencyWidth))},
     m_offset{0}
 {
     // initialize FFT
@@ -310,7 +311,8 @@ void PitchShift<FRAME_SIZE>::update(void)
     }
 
     // synthesize the signal
-    for (int i = 1; i < HALF_FRAME_SIZE; i++) {
+    // as an optimization only the elements in the audible range are calculated
+    for (int i = 1; i < m_audibleRangeEndIndex; i++) {
         // get new magnitude and true frequency from the synthesis array
         float32_t magnitude = m_synthesisMagnitudes[i];
         float32_t temp = m_synthesisFrequencies[i];
@@ -337,8 +339,8 @@ void PitchShift<FRAME_SIZE>::update(void)
         m_floatComplexBuffer[i * 2 + 1] = magnitude * arm_sin_f32(m_phaseSum[i]);
     }
 
-    // zero negative frequencies
-    std::memset(m_floatComplexBuffer + FRAME_SIZE, 0, sizeof(float32_t) * FRAME_SIZE);
+    // zero out all frequencies above the hearing threshold as well as the mirrored second half of the FFT spectrum
+    std::memset(m_floatComplexBuffer + (2 * m_audibleRangeEndIndex), 0, sizeof(float32_t) * (FRAME_SIZE + FRAME_SIZE - (2 * m_audibleRangeEndIndex)));
 
     // do the iFFT
 #if defined(KINETISK)

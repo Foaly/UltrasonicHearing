@@ -83,6 +83,7 @@ private:
     float32_t m_pitchShiftFactor;
     float32_t m_highPassCutoff;
     uint16_t m_startIndex;
+    const uint16_t m_audibleRangeEndIndex;
 
     uint16_t m_offset;
     int16_t m_inputBuffer[FRAME_SIZE] __attribute__ ((aligned(4)));
