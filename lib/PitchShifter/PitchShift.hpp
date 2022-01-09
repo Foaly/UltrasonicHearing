@@ -82,6 +82,7 @@ private:
     const float32_t m_binFrequencyWidth;
     float32_t m_pitchShiftFactor;
     float32_t m_highPassCutoff;
+    uint16_t m_startIndex;
 
     uint16_t m_offset;
     int16_t m_inputBuffer[FRAME_SIZE] __attribute__ ((aligned(4)));

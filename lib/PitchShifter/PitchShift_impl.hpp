@@ -86,7 +86,8 @@ PitchShift<FRAME_SIZE>::PitchShift(uint32_t sampleRate, float32_t pitchShiftFact
     AudioStream(1, inputQueueArray),
     m_halfSampleRate{static_cast<uint32_t>(std::round(sampleRate / 2.f))},
     m_binFrequencyWidth{static_cast<float32_t>(sampleRate) / FRAME_SIZE},
-    m_highPassCutoff(0.f),
+    m_highPassCutoff{0.f},
+    m_startIndex{1},
     m_offset{0}
 {
     // initialize FFT
@@ -148,12 +149,14 @@ void PitchShift<FRAME_SIZE>::setHighPassCutoff(float cutoff)
     }
     else if (cutoff > m_halfSampleRate)
     {
-        Serial.print("PitchShift highpass cutoff can not be bigger than Fs/2. Overwritting it to ");
-        Serial.print(m_halfSampleRate);
-        Serial.println(".");
+        Serial.printf("PitchShift highpass cutoff can not be bigger than half of the sample rate. Overwritting it to %d.\n", m_halfSampleRate);
         cutoff = m_halfSampleRate;
     }
     m_highPassCutoff = cutoff;
+
+    // the highpass is applied by skipping the lower FFT bins in the analysis and shifting stage
+    const uint16_t highpassIndex = std::round(m_highPassCutoff / m_binFrequencyWidth) + 1;
+    m_startIndex = std::min(highpassIndex, HALF_FRAME_SIZE);
 }
 
 
@@ -251,9 +254,10 @@ void PitchShift<FRAME_SIZE>::update(void)
     // do the FFT
     // the FFT output is complex and in the following format
     // {real(0), imag(0), real(1), imag(1), ...}
-    // real[0] and imag[0] are both real valued. They are ignored throughout the processing, which is why the loop counters start at 1
+    // real[0] and imag[0] are both real valued.
+    // They are ignored throughout the processing, which is why the loop counters start at 1 unless the highpass increases that starting index
     // real[0] represents the DC offset, and imag[0] should be 0
-    // all other value are complex
+    // all other value are pairs of complex numbers
 #if defined(KINETISK)
     arm_rfft_f32(&m_fftInst, m_floatInBuffer, m_floatComplexBuffer);
 #elif defined(__IMXRT1062__)
@@ -261,7 +265,8 @@ void PitchShift<FRAME_SIZE>::update(void)
 #endif
 
     // analyse the lower half of the signal (upper half is the same just mirrored)
-    for (int i = 1; i < HALF_FRAME_SIZE; i++) {
+    // skipping lower FFT bins as they are not processed later on
+    for (int i = m_startIndex; i < HALF_FRAME_SIZE; i++) {
         // deinterlace the FFT result
         float32_t real = m_floatComplexBuffer[i * 2];
         float32_t imag = m_floatComplexBuffer[i * 2 + 1];
@@ -295,9 +300,7 @@ void PitchShift<FRAME_SIZE>::update(void)
     std::memset(m_synthesisMagnitudes, 0, sizeof m_synthesisMagnitudes);
     std::memset(m_synthesisFrequencies, 0, sizeof m_synthesisFrequencies);
     // apply a high pass filter by skipping lower FFT bins
-    const uint16_t highpassIndex = std::round(m_highPassCutoff / m_binFrequencyWidth) + 1;
-    const uint16_t startIndex = std::min(highpassIndex, HALF_FRAME_SIZE);
-    for (int i = startIndex; i < HALF_FRAME_SIZE; i++) {
+    for (int i = m_startIndex; i < HALF_FRAME_SIZE; i++) {
         // do the actual pitch shifting
         uint16_t index = i * m_pitchShiftFactor;
         if (index <= HALF_FRAME_SIZE) {
