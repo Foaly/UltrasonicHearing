@@ -77,6 +77,9 @@ private:
     static const uint16_t HALF_FRAME_SIZE = FRAME_SIZE / 2;
     static constexpr float32_t AMPLITUDE_CORRECTION_FACTOR = (OVERSAMPLING_FACTOR < 4) ? 1.f : (8.f / 3.f / OVERSAMPLING_FACTOR); // only verified for Hann windows
 
+    static_assert(OVERSAMPLING_FACTOR && !(OVERSAMPLING_FACTOR & (OVERSAMPLING_FACTOR - 1)), "OVERSAMPLING_FACTOR has to be a power of 2.");
+    static_assert(HOP_SIZE >= 128, "HOP_SIZE has to be bigger than or equal to 128.");
+
     const float32_t m_omega = 2.0 * M_PI * static_cast<float32_t>(HOP_SIZE) / FRAME_SIZE;  // omega is the nominal (expected) phase increment for each FFT bin at the given analysis hop size
     const uint32_t m_halfSampleRate;
     const float32_t m_binFrequencyWidth;
