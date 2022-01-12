@@ -277,25 +277,26 @@ void PitchShift<FRAME_SIZE>::update(void)
         float32_t phase = atan2_approximation(imag, real);
 
         // compute phase difference (derivative)
-        float32_t temp = phase - m_previousPhases[i];
+        float32_t frequency = phase - m_previousPhases[i];
         m_previousPhases[i] = phase;
 
         // subtract the expected phase increment (to get the phase offset of the bin)
-        temp -= static_cast<float32_t>(i) * m_omega;
+        frequency -= static_cast<float32_t>(i) * m_omega;
+
 
         // wrap phase into the range ]-pi, pi]
-        temp = wrap_phase(temp);
+        frequency = wrap_phase(frequency);
 
         // get deviation from bin frequency from the +/- Pi interval
         // (this takes out the influence of the overlap on the bins phase)
-        temp = OVERSAMPLING_FACTOR * temp / (2. * M_PI);
+        frequency = OVERSAMPLING_FACTOR * frequency / (2. * M_PI);
 
         // compute the i-th partials' true frequency
-        temp = static_cast<float32_t>(i) * m_binFrequencyWidth + temp * m_binFrequencyWidth;
+        frequency = static_cast<float32_t>(i) * m_binFrequencyWidth + frequency * m_binFrequencyWidth;
 
         // save magnitude and true frequency
         m_magnitudes[i] = magnitude;
-        m_frequencies[i] = temp;
+        m_frequencies[i] = frequency;
     }
 
     std::memset(m_synthesisMagnitudes, 0, sizeof m_synthesisMagnitudes);
@@ -315,23 +316,23 @@ void PitchShift<FRAME_SIZE>::update(void)
     for (int i = 1; i < m_audibleRangeEndIndex; i++) {
         // get new magnitude and true frequency from the synthesis array
         float32_t magnitude = m_synthesisMagnitudes[i];
-        float32_t temp = m_synthesisFrequencies[i];
+        float32_t phase = m_synthesisFrequencies[i];
 
         // subtract bin mid frequency
-        temp -= static_cast<float32_t>(i) * m_binFrequencyWidth;
+        phase -= static_cast<float32_t>(i) * m_binFrequencyWidth;
 
         // get bin deviation from freq deviation
-        temp /= m_binFrequencyWidth;
+        phase /= m_binFrequencyWidth;
 
         // take oversampling into account
-        temp = 2.0 * M_PI * temp / OVERSAMPLING_FACTOR;
+        phase = 2.0 * M_PI * phase / OVERSAMPLING_FACTOR;
 
         // add the overlap phase advance back in
-        temp += static_cast<float32_t>(i) * m_omega;
+        phase += static_cast<float32_t>(i) * m_omega;
 
         // accumulate delta phase to get the bin phase
         // warp phase to avoid float precision issues
-        m_phaseSum[i] = wrap_phase(m_phaseSum[i] + temp);
+        m_phaseSum[i] = wrap_phase(m_phaseSum[i] + phase);
 
         // compute new real and imaginary part and re-interleave
         // Note: the arm sine & cosine functions use lookup tables and are faster than their std counterpart at the expense of precision (which is sufficient in this case)
