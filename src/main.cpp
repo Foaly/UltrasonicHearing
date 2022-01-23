@@ -39,7 +39,7 @@ const int micInput = AUDIO_INPUT_MIC;
 const int sampleRate = 192000;
 //const int sampleRate = 234000;
 
-const int16_t semitones = -12 * 1;  // shift in semitones
+const int16_t semitones = 12 * -1;  // shift in semitones
 const float32_t pitchShiftFactor = std::pow(2., semitones / 12.);
 
 elapsedMillis performanceStatsClock;
@@ -56,15 +56,41 @@ AudioSynthNoiseWhite     noise;
 AudioRecordQueue         queue;
 WavFileWriter            wavWriter(queue);
 
+// setup for testing a whole octave of sine waves
+float32_t octaveF10[13] = {22350.6, 23679.6, 25087.7, 26579.5, 28160.0, 29834.5, 31608.5, 33488.1, 35479.4, 37589.1, 39824.3, 42192.3};
+// note names                 F 10,   F# 10,    G 10,   G# 10,    A 10,   A# 10,    B 10,    C 11,   C# 11,    D 11,   D# 11,    E 11
+AudioSynthWaveformSine sineBank[12];
+AudioMixer4 sineMixers[4];
+
+AudioConnection c1(sineBank[0], 0, sineMixers[0], 0);
+AudioConnection c2(sineBank[1], 0, sineMixers[0], 1);
+AudioConnection c3(sineBank[2], 0, sineMixers[0], 2);
+AudioConnection c4(sineBank[3], 0, sineMixers[0], 3);
+AudioConnection c5(sineBank[4], 0, sineMixers[1], 0);
+AudioConnection c6(sineBank[5], 0, sineMixers[1], 1);
+AudioConnection c7(sineBank[6], 0, sineMixers[1], 2);
+AudioConnection c8(sineBank[7], 0, sineMixers[1], 3);
+AudioConnection c9(sineBank[8], 0, sineMixers[2], 0);
+AudioConnection c10(sineBank[9], 0, sineMixers[2], 1);
+AudioConnection c11(sineBank[10], 0, sineMixers[2], 2);
+AudioConnection c12(sineBank[11], 0, sineMixers[2], 3);
+
+AudioConnection mix1(sineMixers[0], 0, sineMixers[3], 0);
+AudioConnection mix2(sineMixers[1], 0, sineMixers[3], 1);
+AudioConnection mix3(sineMixers[2], 0, sineMixers[3], 2);
+
+// pass through
 //AudioConnection    patchCord1(audioInput, 0, audioOutput, 0);
 //AudioConnection    patchCord2(audioInput, 1, audioOutput, 1);
 
+// debug printing
 //AudioConnection    patchCord(counter, 0, fft, 0);
 //AudioConnection    patchCord1(fft, 0, printer, 0);
 
 //AudioConnection      sineToFFT(sine, 0, fft, 0);
 //AudioConnection      noiseToFFT(noise, 0, fft, 0);
-AudioConnection      micToFFT(audioInput, 0, fft, 0);
+AudioConnection sineBankToFFT(sineMixers[3], 0, fft, 0);
+//AudioConnection      micToFFT(audioInput, 0, fft, 0);
 AudioConnection      fftToOut(fft, 0, audioOutput, 0);
 AudioConnection      fftToOut2(fft, 0, audioOutput, 1);
 //AudioConnection      micToWAV(audioInput, 0, queue, 0);
@@ -84,13 +110,18 @@ void setup() {
     audioShield.enable();
     audioShield.inputSelect(micInput);
     audioShield.micGain(40);  //0-63
-    audioShield.volume(0.8);  //0-1
+    audioShield.volume(0.7);  //0-1
 
     setI2SFreq(sampleRate);
     Serial.print("Running at samplerate: ");
     Serial.println(sampleRate);
 
     //fft.setHighPassCutoff(22000.f);
+
+    for(int i = 0; i < 12; i++) {
+        sineBank[i].frequency(octaveF10[i] * (AUDIO_SAMPLE_RATE_EXACT / sampleRate));
+        sineBank[i].amplitude(0.1f);
+    }
 
     sine.frequency(440.f * (AUDIO_SAMPLE_RATE_EXACT / sampleRate));
     sine.amplitude(0.2f);
@@ -113,7 +144,7 @@ void loop() {
         if ( incomingByte == 'r' ) {
             if (!wavWriter.isWriting()) {
                 Serial.println("Recording started!");
-                wavWriter.open("Ultra.wav", sampleRate, 1);
+                wavWriter.open("ultra.wav", sampleRate, 1);
             }
             else {
                 Serial.println("Recording stopped!");
