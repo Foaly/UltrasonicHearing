@@ -304,10 +304,10 @@ void PitchShift<FRAME_SIZE>::update(void)
     // apply a high pass filter by skipping lower FFT bins
     for (int i = m_startIndex; i < HALF_FRAME_SIZE; i++) {
         // do the actual pitch shifting
-        uint16_t index = i * m_pitchShiftFactor;
-        if (index <= HALF_FRAME_SIZE) {
-            m_synthesisMagnitudes[index] += m_magnitudes[i];
-            m_synthesisFrequencies[index] = m_frequencies[i] * m_pitchShiftFactor;
+        const uint16_t binIndex = std::round(i * m_pitchShiftFactor);
+        if (binIndex <= HALF_FRAME_SIZE) {
+            m_synthesisMagnitudes[binIndex] += m_magnitudes[i];
+            m_synthesisFrequencies[binIndex] = m_frequencies[i] * m_pitchShiftFactor;
         }
     }
 
