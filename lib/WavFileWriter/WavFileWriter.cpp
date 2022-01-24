@@ -95,6 +95,9 @@ bool WavFileWriter::open(const char *fileName, unsigned int sampleRate, unsigned
     }
 
     if (SD.exists(fileName)) {
+        Serial.print("File: \"");
+        Serial.print(fileName);
+        Serial.println("\" already exists! Overwritting!");
         SD.remove(fileName);
     }
 

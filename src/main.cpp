@@ -143,8 +143,14 @@ void loop() {
 
         if ( incomingByte == 'r' ) {
             if (!wavWriter.isWriting()) {
-                Serial.println("Recording started!");
-                wavWriter.open("ultra.wav", sampleRate, 1);
+                std::size_t bufferSize = 6 + (sizeof(uint32_t) * 8) + 4 + 1;
+                char filenameBuffer[bufferSize];
+                snprintf(filenameBuffer, bufferSize, "ultra_%lu.wav", millis());
+
+                Serial.print("Recording into \"");
+                Serial.print(filenameBuffer);
+                Serial.println("\" started!");
+                wavWriter.open(filenameBuffer, sampleRate, 1);
             }
             else {
                 Serial.println("Recording stopped!");
