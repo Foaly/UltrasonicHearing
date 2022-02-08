@@ -28,14 +28,18 @@
 
 uint16_t failedTestCount = 0;
 
-const int sampleRate = 44100;
+//const int sampleRate = 44100;
+//const int sampleRate = 96000;
+//const int sampleRate = 176400;
+const int sampleRate = 192000;
 //const int sampleRate = 234000;
-const uint16_t frameSize = 1024;  // has to be power of 2
-const int16_t semitones = -12;  // shift in semitones
+
+const uint16_t frameSize = 2048;  // has to be power of 2
+const int16_t semitones = 12 * -1;  // shift in semitones
 const float32_t pitchShiftFactor = std::pow(2., semitones / 12.);
 
 const float amplitude = 32767 * 0.2f;
-const float frequency = 440.f;
+const float frequency = 1000.f;
 const float phase = 0.f;
 const float deltaTime = 1.f / sampleRate;
 float time = 0.f;
@@ -48,12 +52,37 @@ int sineGenerator() {
     return static_cast<int>(value);
 }
 
+int counter = 0;
+int stepValue = 0;
+
+// generates a step series with frame having a higher number than the last frame
+int stepGenerator() {
+    if (counter > frameSize)
+    {
+        counter = 0;
+        stepValue++;
+    }
+    counter++;
+    return stepValue;
+}
+
+// generates one dirac impuls
+int pulseGenerator() {
+    if (counter == (frameSize / 2))
+    {
+        return 32767;
+    }
+    counter++;
+    return 0;
+}
 
 void test_pitchShifter(void) {
     PitchShift<frameSize> pitchShifter(sampleRate, pitchShiftFactor);
     pitchShifter.setInputGenerator(&sineGenerator);
+    //pitchShifter.setInputGenerator(&stepGenerator);
+    //pitchShifter.setInputGenerator(&pulseGenerator);
 
-    const uint16_t frameCount = 4 * frameSize / AUDIO_BLOCK_SAMPLES;
+    const uint16_t frameCount = 7 * frameSize / AUDIO_BLOCK_SAMPLES;
 
     for(uint16_t i = 0; i < frameCount; i++)
         pitchShifter.update();
