@@ -39,7 +39,7 @@ const int micInput = AUDIO_INPUT_MIC;
 const int sampleRate = 192000;
 //const int sampleRate = 234000;
 
-const int16_t semitones = 12 * -1;  // shift in semitones
+const int16_t semitones = 12 * -4;  // shift in semitones
 const float32_t pitchShiftFactor = std::pow(2., semitones / 12.);
 
 elapsedMillis performanceStatsClock;
@@ -89,8 +89,8 @@ AudioConnection mix3(sineMixers[2], 0, sineMixers[3], 2);
 
 //AudioConnection      sineToFFT(sine, 0, fft, 0);
 //AudioConnection      noiseToFFT(noise, 0, fft, 0);
-AudioConnection sineBankToFFT(sineMixers[3], 0, fft, 0);
-//AudioConnection      micToFFT(audioInput, 0, fft, 0);
+//AudioConnection      sineBankToFFT(sineMixers[3], 0, fft, 0);
+AudioConnection      micToFFT(audioInput, 0, fft, 0);
 AudioConnection      fftToOut(fft, 0, audioOutput, 0);
 AudioConnection      fftToOut2(fft, 0, audioOutput, 1);
 //AudioConnection      micToWAV(audioInput, 0, queue, 0);
@@ -109,14 +109,14 @@ void setup() {
     AudioMemory(500);
     audioShield.enable();
     audioShield.inputSelect(micInput);
-    audioShield.micGain(40);  //0-63
-    audioShield.volume(0.7);  //0-1
+    audioShield.micGain(30);  //0-63
+    audioShield.volume(0.6);  //0-1
 
     setI2SFreq(sampleRate);
     Serial.print("Running at samplerate: ");
     Serial.println(sampleRate);
 
-    //fft.setHighPassCutoff(22000.f);
+    fft.setHighPassCutoff(20000.f);
 
     for(int i = 0; i < 12; i++) {
         sineBank[i].frequency(octaveF10[i] * (AUDIO_SAMPLE_RATE_EXACT / sampleRate));
