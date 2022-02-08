@@ -26,7 +26,6 @@
 
 #include <cmath>
 
-uint16_t failedTestCount = 0;
 
 //const int sampleRate = 44100;
 //const int sampleRate = 96000;
@@ -66,15 +65,17 @@ int stepGenerator() {
     return stepValue;
 }
 
+
 // generates one dirac impuls
 int pulseGenerator() {
+    counter++;
     if (counter == (frameSize / 2))
     {
         return 32767;
     }
-    counter++;
     return 0;
 }
+
 
 void test_pitchShifter(void) {
     PitchShift<frameSize> pitchShifter(sampleRate, pitchShiftFactor);
@@ -91,6 +92,9 @@ void test_pitchShifter(void) {
 }
 
 
+uint16_t failedTestCount = 0;
+
+// IMPORTANT: Remember to remove --ffast-math from the compiler options otherwise the test won't start ¯\_(ツ)_/¯
 void setup() {
     // Wait for >2 secs if board doesn't support software reset via Serial.DTR/RTS
     delay(2000);
