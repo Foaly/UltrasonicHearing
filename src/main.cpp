@@ -34,10 +34,12 @@
 
 
 const int micInput = AUDIO_INPUT_MIC;
-//const int sampleRate = 44100;
-//const int sampleRate = 96000;
-const int sampleRate = 192000;
-//const int sampleRate = 234000;
+//const int micInput = AUDIO_INPUT_LINEIN;
+
+//const uint32_t sampleRate = 44100;
+//const uint32_t sampleRate = 96000;
+const uint32_t sampleRate = 192000;
+//const uint32_t sampleRate = 234000;
 
 const int16_t semitones = 12 * -4;  // shift in semitones
 const float32_t pitchShiftFactor = std::pow(2., semitones / 12.);
@@ -80,8 +82,8 @@ AudioConnection mix2(sineMixers[1], 0, sineMixers[3], 1);
 AudioConnection mix3(sineMixers[2], 0, sineMixers[3], 2);
 
 // pass through
-//AudioConnection    patchCord1(audioInput, 0, audioOutput, 0);
-//AudioConnection    patchCord2(audioInput, 1, audioOutput, 1);
+//AudioConnection    passThroughL(audioInput, 0, audioOutput, 0);
+//AudioConnection    passThroughR(audioInput, 1, audioOutput, 1);
 
 // debug printing
 //AudioConnection    patchCord(counter, 0, fft, 0);
@@ -90,9 +92,9 @@ AudioConnection mix3(sineMixers[2], 0, sineMixers[3], 2);
 //AudioConnection      sineToFFT(sine, 0, fft, 0);
 //AudioConnection      noiseToFFT(noise, 0, fft, 0);
 //AudioConnection      sineBankToFFT(sineMixers[3], 0, fft, 0);
-AudioConnection      micToFFT(audioInput, 0, fft, 0);
-AudioConnection      fftToOut(fft, 0, audioOutput, 0);
-AudioConnection      fftToOut2(fft, 0, audioOutput, 1);
+AudioConnection      inToFFT(audioInput, 0, fft, 0);
+AudioConnection      fftToOutL(fft, 0, audioOutput, 0);
+AudioConnection      fftToOutR(fft, 0, audioOutput, 1);
 //AudioConnection      micToWAV(audioInput, 0, queue, 0);
 AudioConnection      fftToWav(fft, 0, queue, 0);
 //AudioConnection      fftToPrinter(fft, 0, printer, 0);
@@ -113,8 +115,7 @@ void setup() {
     audioShield.volume(0.6);  //0-1
 
     setI2SFreq(sampleRate);
-    Serial.print("Running at samplerate: ");
-    Serial.println(sampleRate);
+    Serial.printf("Running at samplerate: %d\n", sampleRate);
 
     fft.setHighPassCutoff(20000.f);
 
