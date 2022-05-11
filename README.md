@@ -10,6 +10,7 @@ Hardware
 
 This project uses the Teensy 4.1 and the corresponding Teensy 4.x audio shield.
 However it can also be run on the Teensy 3.6 and its corresponding audio shield version.
+The Knowles SPU0410LR5H-QB MEMS microphone is used as the ultrasound receiver.
 
 
 License
