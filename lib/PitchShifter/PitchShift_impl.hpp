@@ -276,6 +276,11 @@ void PitchShift<FRAME_SIZE>::update(void)
         float32_t magnitude = std::sqrt(real * real + imag * imag);  // Note to future optimizers: std::sqrt is faster than arm_sqrt_f32, I measured... (possibly because it uses sqrt hardware instructions better ¯\_(ツ)_/¯)
         float32_t phase = atan2_approximation(imag, real);
 
+        // noise gate to remove continous tones in the output, that result from many bins with little energy accumulating into few bins with high energy
+        if (magnitude <= 0.15f)  // 0.05f is the noise floor without a mic, 0.15f was emperically determined in a quiet room
+            magnitude = 0.f;
+        // TODO: this could be used as an optimization omitting calculations
+
         // compute phase difference (derivative)
         float32_t frequency = phase - m_previousPhases[i];
         m_previousPhases[i] = phase;
@@ -292,7 +297,7 @@ void PitchShift<FRAME_SIZE>::update(void)
         frequency = OVERSAMPLING_FACTOR * frequency / (2. * M_PI);
 
         // compute the i-th partials' true frequency
-        frequency = static_cast<float32_t>(i) * m_binFrequencyWidth + frequency * m_binFrequencyWidth;
+        frequency = static_cast<float32_t>(i) * m_binFrequencyWidth + frequency * m_binFrequencyWidth; // could be rewritten as (i + f) * b
 
         // save magnitude and true frequency
         m_magnitudes[i] = magnitude;
@@ -317,6 +322,8 @@ void PitchShift<FRAME_SIZE>::update(void)
         // get new magnitude and true frequency from the synthesis array
         float32_t magnitude = m_synthesisMagnitudes[i];
         float32_t phase = m_synthesisFrequencies[i];
+
+        // TODO: continue; when magnitude < threshold
 
         // subtract bin mid frequency
         phase -= static_cast<float32_t>(i) * m_binFrequencyWidth;
