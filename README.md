@@ -4,6 +4,9 @@ Ultrasonic Hearing
 Enables you to extend your auditory sense into the ultrasonic range.
 It can both be used with headphones or be connected directly to a cochlear implant.
 
+This repository contains the code accompanying the master thesis `Ultrasonic Cyborg Hearing` by Maximilian Wagenbach pubished at the TU Berlin.
+The most recent version of the code can be found at https://github.com/Foaly/UltrasonicHearing/.
+
 
 Hardware
 --------
